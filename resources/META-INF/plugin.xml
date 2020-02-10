@@ -1,0 +1,57 @@
+<idea-plugin>
+  <id>dart.helper.exgou.cn</id>
+  <name>Dart Helper</name>
+  <version>1.0</version>
+  <vendor email="wskfjtheqian@163.com" url="http://www.exgou.cn">ExGou</vendor>
+
+  <description><![CDATA[
+     Dart 语言开发辅助工具
+    ]]></description>
+
+  <change-notes><![CDATA[
+    ]]>
+  </change-notes>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="173.0"/>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>Dart</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+  </extensions>
+
+  <actions>
+    <action id="josn.to.dart.object" class="com.exgou.heqain.dart.helper.news.JsonToDartObjectAction"
+            icon="/icons/dart_iocn.png"
+            text="JsonToDartObjectAction" description="JsonToDartObjectAction">
+      <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
+    </action>
+    <action id="Dart.Generate.Named.Action" icon="/icons/dart_iocn.png"
+            class="com.exgou.heqain.dart.helper.generate.name.DartGenerateNamedAction"
+            text="Dart Generate Name">
+      <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
+    </action>
+
+    <action id="Dart.Generate.formMap.Action" icon="/icons/dart_iocn.png"
+            class="com.exgou.heqain.dart.helper.generate.bymap.DartGenerateFromMapAction"
+            text="Dart Generate FormMap">
+      <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
+    </action>
+
+    <action id="Dart.Generate.toMap.Action" icon="/icons/dart_iocn.png"
+            class="com.exgou.heqain.dart.helper.generate.bymap.DartGenerateToMapAction"
+            text="Dart Generate ToMap">
+      <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
+    </action>
+
+    <action id="ExportToDoc" class="com.exgou.heqain.dart.helper.printing.ExportToDocAction" text="Export To Doc"
+            description="Export File To Doc File">
+      <add-to-group group-id="PrintExportGroup" anchor="last"/>
+    </action>
+  </actions>
+
+</idea-plugin>
