@@ -46,6 +46,6 @@ class JsonToDartObjectAction : AnAction() {
             }
             ret += "_" + word.toLowerCase()
         }
-        return if (ret.isEmpty()) ret else ret.substring(1)
+        return if (ret.isEmpty()) name else ret.substring(1)
     }
 }
