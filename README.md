@@ -10,3 +10,7 @@ int,double,String,bool,DateTime,List,Map,enum,class
 3.将代码输出到 Word文档
 
 [下载](./dart_helper.jar?raw=true)
+
+不能查看图片和下载文件，请将ip地址添加到 hosts文件
+192.30.253.112  github.com
+199.232.4.133   raw.githubusercontent.com
