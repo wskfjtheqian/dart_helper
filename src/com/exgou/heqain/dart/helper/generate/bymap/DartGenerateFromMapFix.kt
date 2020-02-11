@@ -14,8 +14,6 @@ import com.jetbrains.lang.dart.ide.generation.BaseCreateMethodsFix
 import com.jetbrains.lang.dart.psi.*
 
 class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
-    var isDataVerify: Boolean = true
-
     override fun processElements(project: Project, editor: Editor, elementsToProcess: MutableSet<DartComponent>) {
         val templateManager = TemplateManager.getInstance(project)
         var toMap = myDartClass.findNamedConstructor("fromMap");
@@ -65,12 +63,13 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
                 return toEnum(name, expression?.text, isOne);
             } else {
                 when (expression?.text) {
-                    "int" -> return toInt(name)
-                    "double" -> return toDouble(name)
-                    "String" -> return toString(name)
-                    "DateTime" -> return toDateTime(name)
-                    "List" -> return toList(name, fieldType)
-                    "Map" -> return toMap(name, fieldType)
+                    "int" -> return toInt(name, isOne)
+                    "double" -> return toDouble(name, isOne)
+                    "bool" -> return toBool(name, isOne)
+                    "String" -> return toString(name, isOne)
+                    "DateTime" -> return toDateTime(name, isOne)
+                    "List" -> return toList(name, fieldType, isOne)
+                    "Map" -> return toMap(name, fieldType, isOne)
                     "dynamic" -> return name
                 }
                 if (isOne) {
@@ -83,64 +82,69 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         return name
     }
 
-    private fun toEnum(name: String?, enumName: String?, isOne: Boolean): String? {
-        if (isDataVerify) {
-            if (!isOne) {
-                return "null == (value) ? null : (value is num ? $enumName.values[value.toInt()] : $enumName.values[int.tryParse(value)])"
-            }
-            return "null == (temp = $name) ? null : (temp is num ? $enumName.values[temp.toInt()] : $enumName.values[int.tryParse(temp)])"
+    private fun toBool(name: String?, isOne: Boolean): String? {
+        if (!isOne) {
+            return "null == (value) ? null : (value is bool ? value :(value is num ? 0 != value : bool.fromEnvironment(value.toString())))"
         }
-        return "$enumName.values[$name]"
+        return "null == (temp = $name) ? null : (temp is bool ? temp :(temp is num ? 0 != temp : bool.fromEnvironment(temp.toString())))"
     }
 
-    private fun toList(name: String?, fieldType: DartType): String {
+    private fun toEnum(name: String?, enumName: String?, isOne: Boolean): String? {
+        if (!isOne) {
+            return "null == (value) ? null : (value is num ? $enumName.values[value.toInt()] : $enumName.values[int.tryParse(value)])"
+        }
+        return "null == (temp = $name) ? null : (temp is num ? $enumName.values[temp.toInt()] : $enumName.values[int.tryParse(temp)])"
+    }
+
+    private fun toList(name: String?, fieldType: DartType, isOne: Boolean): String {
         var typeList = fieldType.typeArguments?.typeList?.typeList
 
         if (null == typeList || 0 == typeList.size) {
             return "$name??[]"
-        } else if (isDataVerify) {
-            return "null == (temp = $name) ? [] : (temp is List ? temp.map((value)=>${fromItem("value", typeList?.get(0))}).toList() : [])"
+        } else if (!isOne) {
+            return "$name?.map((value)=>${fromItem("value", typeList?.get(0))})?.toList()??[]"
         }
-        return "$name?.map((value)=>${fromItem("value", typeList?.get(0))})?.toList()??[]"
+        return "null == (temp = $name) ? [] : (temp is List ? temp.map((value)=>${fromItem("value", typeList?.get(0))}).toList() : [])"
     }
 
-    private fun toMap(name: String?, fieldType: DartType): String {
+    private fun toMap(name: String?, fieldType: DartType, isOne: Boolean): String {
         var typeList = fieldType.typeArguments?.typeList?.typeList
 
         if (null == typeList || 0 == typeList.size) {
             return "$name??{}"
-        } else if (isDataVerify) {
-            return "null == (temp = $name) ? [] : (temp is Map ? temp.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0))},${fromItem("value", typeList?.get(1))})):[])"
+        } else if (!isOne) {
+            return "$name?.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0))},${fromItem("value", typeList?.get(1))}))??{}"
         }
-        return "$name?.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0))},${fromItem("value", typeList?.get(1))}))??{}"
+        return "null == (temp = $name) ? [] : (temp is Map ? temp.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0))},${fromItem("value", typeList?.get(1))})):[])"
     }
 
-    private fun toInt(name: String?): String {
-        if (isDataVerify) {
-            return "null == (temp = $name) ? null : (temp is num ? temp.toInt() : int.tryParse(temp))"
+    private fun toInt(name: String?, isOne: Boolean): String {
+        if (!isOne) {
+            return "null == (value) ? null : (value is num ? value.toInt() : int.tryParse(value))"
         }
-        return "$name"
+        return "null == (temp = $name) ? null : (temp is num ? temp.toInt() : int.tryParse(temp))"
     }
 
-    private fun toDouble(name: String?): String {
-        if (isDataVerify) {
-            return "null == (temp = $name) ? null : (temp is num ? temp.toDouble() : double.tryParse(temp))"
+    private fun toDouble(name: String?, isOne: Boolean): String {
+        if (!isOne) {
+            return "null == (value) ? null : (value is num ? value.toDouble() : double.tryParse(value))"
         }
-        return "$name"
+        return "null == (temp = $name) ? null : (temp is num ? temp.toDouble() : double.tryParse(temp))"
+
     }
 
-    private fun toString(name: String?): String {
-        if (isDataVerify) {
-            return "$name?.toString()"
+    private fun toString(name: String?, isOne: Boolean): String {
+        if (!isOne) {
+            return "value?.toString()"
         }
-        return "$name"
+        return "$name?.toString()"
     }
 
-    private fun toDateTime(name: String?): String {
-        if (isDataVerify) {
-            return "null == (temp = $name) ? null : DateTime.tryParse(temp)"
+    private fun toDateTime(name: String?, isOne: Boolean): String {
+        if (!isOne) {
+            return "null == (value) ? null : DateTime.tryParse(value)"
         }
-        return "DateTime.tryParse($name)"
+        return "null == (temp = $name) ? null : DateTime.tryParse(temp)"
     }
 
     fun buildFunctionsText(templateManager: TemplateManager?, fields: List<DartComponent>) {
