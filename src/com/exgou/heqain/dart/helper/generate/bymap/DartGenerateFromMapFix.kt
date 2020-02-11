@@ -1,10 +1,14 @@
 package com.exgou.heqain.dart.helper.generate.bymap
 
+import com.exgou.heqain.dart.helper.utils.UiUtils
+import com.exgou.heqain.dart.helper.utils.UiUtils.getJsonName
 import com.exgou.heqain.dart.helper.utils.UiUtils.isDartEnum
 import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiComment
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.lang.dart.ide.generation.BaseCreateMethodsFix
 import com.jetbrains.lang.dart.psi.*
@@ -49,14 +53,15 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
     }
 
     private fun addItem(field: DartComponent, isOne: Boolean): String? {
+        var jsonName: String? = getJsonName(field);
         var fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java)
-        return fromItem("map['${field?.name}']", fieldType, isOne)
+        return fromItem("map['${jsonName ?: field?.name}']", fieldType, isOne)
     }
 
     private fun fromItem(name: String?, fieldType: DartType?, isOne: Boolean = false): String? {
         if (null != fieldType) {
             var expression: DartReferenceExpression? = fieldType.referenceExpression
-            if (isDartEnum(expression!!)) {
+            if (isDartEnum(fieldType!!)) {
                 return toEnum(name, expression?.text, isOne);
             } else {
                 when (expression?.text) {
@@ -78,7 +83,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         return name
     }
 
-    private fun toEnum(name: String?, enumName: String, isOne: Boolean): String? {
+    private fun toEnum(name: String?, enumName: String?, isOne: Boolean): String? {
         if (isDataVerify) {
             if (!isOne) {
                 return "null == (value) ? null : (value is num ? $enumName.values[value.toInt()] : $enumName.values[int.tryParse(value)])"

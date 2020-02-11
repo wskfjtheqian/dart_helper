@@ -46,7 +46,8 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         template.addTextSegment("return {")
 
         elementsToProcess.forEach {
-            template.addTextSegment("'${it.name!!}':")
+            var jsonName: String? = UiUtils.getJsonName(it);
+            template.addTextSegment("'${jsonName ?: it?.name}':")
             template.addTextSegment(addItem(it))
             template.addTextSegment(",")
         }
@@ -64,7 +65,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
     private fun fromItem(name: String?, fieldType: DartType?): String {
         if (null != fieldType) {
             var expression: DartReferenceExpression? = fieldType.referenceExpression
-            if (UiUtils.isDartEnum(expression!!)) {
+            if (UiUtils.isDartEnum(fieldType!!)) {
                 return fromEnum(name);
             } else {
                 when (expression?.text) {
