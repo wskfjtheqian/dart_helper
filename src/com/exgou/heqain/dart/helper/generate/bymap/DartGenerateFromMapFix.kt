@@ -37,15 +37,18 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
     fun buildFunctionsText(templateManager: TemplateManager, dartComponent: MutableSet<DartComponent>): Template? {
         val template = templateManager.createTemplate(this.javaClass.name, "Dart")
         template.isToReformat = true
-        template.addTextSegment("${myDartClass.name}.fromMap(Map<String, dynamic> map) {")
+        template.addTextSegment("factory ${myDartClass.name}.fromMap(Map<String, dynamic> map) {")
+        template.addTextSegment("if (null == map) return null;")
         template.addTextSegment("var temp;")
+        template.addTextSegment("return ${myDartClass.name}(")
 
         elementsToProcess.forEach {
-            template.addTextSegment("this.${it.name!!}=")
+            template.addTextSegment("${it.name!!}:")
             template.addTextSegment(addItem(it, true) ?: "")
-            template.addTextSegment(";")
+            template.addTextSegment(",\n")
         }
 
+        template.addTextSegment(");")
         template.addTextSegment("}")
         return template
     }

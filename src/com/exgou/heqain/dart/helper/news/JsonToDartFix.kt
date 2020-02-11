@@ -43,6 +43,11 @@ class JsonToDartFix(var mProject: Project) {
                 ret.append("//JsonName:").append(key.key).append("\n");
                 ret.append(key.value.name).append(" ").append(toFieldName(toName(key.key))).append(";\n\n");
             }
+            ret.append("${it.key}({")
+            it.value.forEach { key ->
+                ret.append("this.").append(key.key).append(",\n");
+            }
+            ret.append("});\n")
             ret.append("}\n\n")
         }
 
@@ -73,17 +78,17 @@ class JsonToDartFix(var mProject: Project) {
 
     private fun formJsonObject(json: JsonObject, name: String?, classs: HashMap<String, FieldType>) {
         json.propertyList.forEach {
-           var temp= classs[it.name]
-           var type = fomrJsonValue(it.value, name + toClassName(toName(it.name)))
-            if(null == temp){
-                classs[it.name] =type
-            }else{
+            var temp = classs[it.name]
+            var type = fomrJsonValue(it.value, name + toClassName(toName(it.name)))
+            if (null == temp) {
+                classs[it.name] = type
+            } else {
                 if (!(type.type == _Class && temp?.type == _Class)) {
                     var end = types.indexOf(temp?.type!!);
                     for (i in end..types.size) {
                         var item = types[i];
                         if (0 != (item and type.type) && 0 != (item and temp?.type!!)) {
-                            classs[it.name]  = if (item > type.type) {
+                            classs[it.name] = if (item > type.type) {
                                 FieldType(item, type.name)
                             } else {
                                 type
