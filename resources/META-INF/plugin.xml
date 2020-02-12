@@ -2,10 +2,30 @@
   <id>dart.helper.exgou.cn</id>
   <name>Dart Helper</name>
   <version>1.0</version>
-  <vendor email="wskfjtheqian@163.com" url="http://www.exgou.cn">ExGou</vendor>
+  <vendor email="wskfjtheqian@163.com" url="https://github.com/wskfjtheqian">wskfjtheqian</vendor>
 
   <description><![CDATA[
-     Dart 语言开发辅助工具
+     Dart 语言开发辅助工具,
+     <br>
+     1.根据Json数据创建 Dart 文件
+      <br>
+     2.根据Json数据添加 Dart 类（class）
+      <br>
+     3.添加 formMap函数
+      <br>
+     4.添加 toMap函数
+      <br>
+     5.将代码输出到 Word文档
+      <br>
+      <br>
+     支持数据类型
+      <br>
+     int,double,String,bool,DateTime,List,Map,enum,class
+      <br>
+      <br>
+      https://gitee.com/wskfjt/dart_helper
+      <br>
+      https://github.com/wskfjtheqian/dart_helper
     ]]></description>
 
   <change-notes><![CDATA[
