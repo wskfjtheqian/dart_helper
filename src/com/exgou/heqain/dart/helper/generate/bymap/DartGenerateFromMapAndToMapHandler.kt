@@ -19,7 +19,7 @@ class DartGenerateFromMapAndToMapHandler(private val isToMap: Boolean) : BaseDar
     }
 
     override fun getTitle(): String {
-        return if (isToMap) "Add fromMap" else "Add toMap"
+        return if (!isToMap) "Add fromMap" else "Add toMap"
     }
 
     override fun collectCandidates(dartClass: DartClass, list: MutableList<DartComponent>) {
