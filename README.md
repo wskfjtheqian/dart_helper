@@ -24,3 +24,6 @@ int,double,String,bool,DateTime,List,Map,enum,class
 不能查看图片和下载文件，请将ip地址添加到 hosts文件
 192.30.253.112  github.com
 199.232.4.133   raw.githubusercontent.com
+
+[gitee地址](https://gitee.com/wskfjt/dart_helper)
+[github地址](https://github.com/wskfjtheqian/dart_helper)
