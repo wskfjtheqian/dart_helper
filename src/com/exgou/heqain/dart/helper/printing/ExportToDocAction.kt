@@ -20,7 +20,7 @@ class ExportToDocAction : AnAction() {
             try {
                 ExportToDocManager.executeExport(dataContext)
             } catch (var5: FileNotFoundException) {
-                JOptionPane.showMessageDialog(null as Component?, CodeEditorBundle.message("file.not.found", var5.message), CommonBundle.getErrorTitle(), 0)
+                JOptionPane.showMessageDialog(null as Component?, CodeEditorBundle.message("file.not.found", var5.message!!), CommonBundle.getErrorTitle(), 0)
             }
 
         }

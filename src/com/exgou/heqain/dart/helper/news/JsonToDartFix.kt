@@ -43,11 +43,21 @@ class JsonToDartFix(var mProject: Project) {
                 ret.append("//JsonName:").append(key.key).append("\n");
                 ret.append(key.value.name).append(" ").append(toFieldName(toName(key.key))).append(";\n\n");
             }
-            ret.append("${it.key}({")
-            it.value.forEach { key ->
-                ret.append("this.").append(key.key).append(",\n");
+
+            if (0 == it.value.size) {
+                ret.append("${it.key}(")
+            } else {
+                ret.append("${it.key}({")
             }
-            ret.append("});\n")
+            it.value.forEach { key ->
+                ret.append("this.").append(toFieldName(toName(key.key))).append(",\n");
+            }
+
+            if (0 == it.value.size) {
+                ret.append(");\n")
+            } else {
+                ret.append("});\n")
+            }
             ret.append("}\n\n")
         }
 

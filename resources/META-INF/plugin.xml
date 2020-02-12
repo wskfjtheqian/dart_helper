@@ -48,6 +48,12 @@
       <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
     </action>
 
+    <action id="Dart.Generate.AddClassByJson.Action" icon="/icons/dart_iocn.png"
+            class="com.exgou.heqain.dart.helper.generate.json.AddClassByJsonAction"
+            text="Add Class By Json">
+      <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
+    </action>
+
     <action id="ExportToDoc" class="com.exgou.heqain.dart.helper.printing.ExportToDocAction" text="Export To Doc"
             description="Export File To Doc File">
       <add-to-group group-id="PrintExportGroup" anchor="last"/>

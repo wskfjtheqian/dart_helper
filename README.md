@@ -1,13 +1,23 @@
 # dart_helper
-1.根据Json数据创建 Dart Class
-![form_json.gif](./readme/form_json.gif?raw=true)
+1.根据Json数据创建 Dart 文件
+![add_file.gif](./readme/add_file.gif?raw=true)
 
-2.根据Dart Class生成 Json解析函数
+2.根据Json数据添加 Dart 类（class）
+![add_class.gif](./readme/add_class.gif?raw=true)
+
+
+根据Dart Class生成 Json解析函数
 支持数据类型
 int,double,String,bool,DateTime,List,Map,enum,class
-![form_json.gif](./readme/create_json.gif?raw=true)
 
-3.将代码输出到 Word文档
+3.添加 formMap函数
+![add_form_map.gif](./readme/add_form_map.gif?raw=true)
+
+4.添加 toMap函数
+![add_to_map.gif](./readme/add_to_map.gif?raw=true)
+
+
+5.将代码输出到 Word文档
 
 [下载](./dart_helper.jar?raw=true)
 

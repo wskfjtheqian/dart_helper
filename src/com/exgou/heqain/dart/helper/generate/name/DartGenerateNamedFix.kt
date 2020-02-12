@@ -11,28 +11,11 @@ import com.jetbrains.lang.dart.psi.DartComponent
 class DartGenerateNamedFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
 
     override fun processElements(project: Project, editor: Editor, elementsToProcess: Set<DartComponent>) {
-        if (project == null) {
-            //            $$$reportNull$$$0(1);
-        }
-
-        if (editor == null) {
-            //            $$$reportNull$$$0(2);
-        }
-
-        if (elementsToProcess == null) {
-            //            $$$reportNull$$$0(3);
-        }
-
-
-
         val templateManager = TemplateManager.getInstance(project)
         this.anchor = this.doAddMethodsForOne(editor, templateManager, this.buildFunctionsText(templateManager, elementsToProcess), this.anchor)
     }
 
     override fun getNothingFoundMessage(): String {
-        if ("" == null) {
-            //            $$$reportNull$$$0(4);
-        }
         return ""
     }
 
