@@ -17,7 +17,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
     override fun processElements(project: Project, editor: Editor, elementsToProcess: MutableSet<DartComponent>) {
         val templateManager = TemplateManager.getInstance(project)
         var toMap = myDartClass.findNamedConstructor("fromMap");
-        var template = this.buildFunctionsText(templateManager, elementsToProcess);
+        var template = this.buildFunctionsText(templateManager, elementsToProcess, editor);
         if (null != toMap) {
             toMap.delete()
             this.anchor = this.doAddMethodsForOne(editor, templateManager, template, toMap.firstChild)
@@ -34,7 +34,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         return null
     }
 
-    fun buildFunctionsText(templateManager: TemplateManager, dartComponent: MutableSet<DartComponent>): Template? {
+    fun buildFunctionsText(templateManager: TemplateManager, dartComponent: MutableSet<DartComponent>, editor: Editor): Template? {
         val template = templateManager.createTemplate(this.javaClass.name, "Dart")
         template.isToReformat = true
         template.addTextSegment("factory ${myDartClass.name}.fromMap(Map<String, dynamic> map) {")
@@ -44,7 +44,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
 
         elementsToProcess.forEach {
             template.addTextSegment("${it.name!!}:")
-            template.addTextSegment(addItem(it, true) ?: "")
+            template.addTextSegment(addItem(it, true, editor) ?: "")
             template.addTextSegment(",\n")
         }
 
@@ -53,16 +53,16 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         return template
     }
 
-    private fun addItem(field: DartComponent, isOne: Boolean): String? {
+    private fun addItem(field: DartComponent, isOne: Boolean, editor: Editor): String? {
         var jsonName: String? = getJsonName(field);
         var fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java)
-        return fromItem("map['${jsonName ?: field?.name}']", fieldType, isOne)
+        return fromItem("map['${jsonName ?: field?.name}']", fieldType, editor, isOne)
     }
 
-    private fun fromItem(name: String?, fieldType: DartType?, isOne: Boolean = false): String? {
+    private fun fromItem(name: String?, fieldType: DartType?, editor: Editor, isOne: Boolean = false): String? {
         if (null != fieldType) {
             var expression: DartReferenceExpression? = fieldType.referenceExpression
-            if (isDartEnum(fieldType!!)) {
+            if (isDartEnum(fieldType!!, editor)) {
                 return toEnum(name, expression?.text, isOne);
             } else {
                 when (expression?.text) {
@@ -71,8 +71,8 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
                     "bool" -> return toBool(name, isOne)
                     "String" -> return toString(name, isOne)
                     "DateTime" -> return toDateTime(name, isOne)
-                    "List" -> return toList(name, fieldType, isOne)
-                    "Map" -> return toMap(name, fieldType, isOne)
+                    "List" -> return toList(name, fieldType, editor, isOne)
+                    "Map" -> return toMap(name, fieldType, editor, isOne)
                     "dynamic" -> return name
                 }
                 if (isOne) {
@@ -99,26 +99,26 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         return "null == (temp = $name) ? null : (temp is num ? $enumName.values[temp.toInt()] : $enumName.values[int.tryParse(temp)])"
     }
 
-    private fun toList(name: String?, fieldType: DartType, isOne: Boolean): String {
+    private fun toList(name: String?, fieldType: DartType, editor: Editor, isOne: Boolean): String {
         var typeList = fieldType.typeArguments?.typeList?.typeList
 
         if (null == typeList || 0 == typeList.size) {
             return "$name??[]"
         } else if (!isOne) {
-            return "$name?.map((value)=>${fromItem("value", typeList?.get(0))})?.toList()??[]"
+            return "$name?.map((value)=>${fromItem("value", typeList?.get(0), editor)})?.toList()??[]"
         }
-        return "null == (temp = $name) ? [] : (temp is List ? temp.map((value)=>${fromItem("value", typeList?.get(0))}).toList() : [])"
+        return "null == (temp = $name) ? [] : (temp is List ? temp.map((value)=>${fromItem("value", typeList?.get(0), editor)}).toList() : [])"
     }
 
-    private fun toMap(name: String?, fieldType: DartType, isOne: Boolean): String {
+    private fun toMap(name: String?, fieldType: DartType, editor: Editor, isOne: Boolean): String {
         var typeList = fieldType.typeArguments?.typeList?.typeList
 
         if (null == typeList || 0 == typeList.size) {
             return "$name??{}"
         } else if (!isOne) {
-            return "$name?.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0))},${fromItem("value", typeList?.get(1))}))??{}"
+            return "$name?.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0), editor)},${fromItem("value", typeList?.get(1), editor)}))??{}"
         }
-        return "null == (temp = $name) ? [] : (temp is Map ? temp.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0))},${fromItem("value", typeList?.get(1))})):[])"
+        return "null == (temp = $name) ? [] : (temp is Map ? temp.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0), editor)},${fromItem("value", typeList?.get(1), editor)})):[])"
     }
 
     private fun toInt(name: String?, isOne: Boolean): String {
@@ -150,8 +150,5 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         return "null == (temp = $name) ? null : DateTime.tryParse(temp)"
     }
 
-    fun buildFunctionsText(templateManager: TemplateManager?, fields: List<DartComponent>) {
-
-    }
 
 }

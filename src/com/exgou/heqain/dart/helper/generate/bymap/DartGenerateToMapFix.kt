@@ -22,7 +22,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
     override fun processElements(project: Project, editor: Editor, elementsToProcess: MutableSet<DartComponent>) {
         val templateManager = TemplateManager.getInstance(project)
         var toMap = myDartClass.findMemberByName("toMap");
-        var template = this.buildFunctionsText(templateManager, elementsToProcess);
+        var template = this.buildFunctionsText(templateManager, elementsToProcess, editor);
         if (null != toMap) {
             toMap.delete()
             this.anchor = this.doAddMethodsForOne(editor, templateManager, template, toMap.firstChild)
@@ -39,7 +39,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         return null
     }
 
-    private fun buildFunctionsText(templateManager: TemplateManager, dartComponent: MutableSet<DartComponent>): Template? {
+    private fun buildFunctionsText(templateManager: TemplateManager, dartComponent: MutableSet<DartComponent>, editor: Editor): Template? {
         val template = templateManager.createTemplate(this.javaClass.name, "Dart")
         template.isToReformat = true
         template.addTextSegment("Map<String, dynamic> toMap() {")
@@ -48,7 +48,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         elementsToProcess.forEach {
             var jsonName: String? = UiUtils.getJsonName(it);
             template.addTextSegment("'${jsonName ?: it?.name}':")
-            template.addTextSegment(addItem(it))
+            template.addTextSegment(addItem(it, editor))
             template.addTextSegment(",")
         }
 
@@ -57,15 +57,15 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         return template
     }
 
-    private fun addItem(field: DartComponent): String {
+    private fun addItem(field: DartComponent, editor: Editor): String {
         var fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java);
-        return fromItem(field?.name, fieldType);
+        return fromItem(field?.name, fieldType, editor);
     }
 
-    private fun fromItem(name: String?, fieldType: DartType?): String {
+    private fun fromItem(name: String?, fieldType: DartType?, editor: Editor): String {
         if (null != fieldType) {
             var expression: DartReferenceExpression? = fieldType.referenceExpression
-            if (UiUtils.isDartEnum(fieldType!!)) {
+            if (UiUtils.isDartEnum(fieldType!!, editor)) {
                 return fromEnum(name);
             } else {
                 when (expression?.text) {
@@ -73,8 +73,8 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
                     "double" -> return "$name";
                     "String" -> return "$name";
                     "DateTime" -> return fromDateTime(name);
-                    "List" -> return fromList(name, fieldType);
-                    "Map" -> return fromMap(name, fieldType);
+                    "List" -> return fromList(name, fieldType, editor);
+                    "Map" -> return fromMap(name, fieldType, editor);
                 }
 
                 return "$name?.toMap()";
@@ -88,20 +88,20 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         return "$name?.index"
     }
 
-    private fun fromList(name: String?, fieldType: DartType): String {
+    private fun fromList(name: String?, fieldType: DartType, editor: Editor): String {
         var typeList = fieldType.typeArguments?.typeList?.typeList;
         if (null == typeList || 0 == typeList.size) {
             return "$name??[]";
         }
-        return "$name?.map((value)=>${fromItem("value", typeList?.get(0))})?.toList()??[]";
+        return "$name?.map((value)=>${fromItem("value", typeList?.get(0), editor)})?.toList()??[]";
     }
 
-    private fun fromMap(name: String?, fieldType: DartType): String {
+    private fun fromMap(name: String?, fieldType: DartType, editor: Editor): String {
         var typeList = fieldType.typeArguments?.typeList?.typeList;
         if (null == typeList || 0 == typeList.size) {
             return "$name??{}";
         }
-        return "$name?.map((key, value) => MapEntry(${fromItem("key", typeList?.get(0))}, ${fromItem("value", typeList?.get(1))}))??{}";
+        return "$name?.map((key, value) => MapEntry(${fromItem("key", typeList?.get(0), editor)}, ${fromItem("value", typeList?.get(1), editor)}))??{}";
     }
 
     private fun fromDateTime(name: String?): String {

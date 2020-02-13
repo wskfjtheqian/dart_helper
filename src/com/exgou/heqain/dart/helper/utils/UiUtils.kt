@@ -1,11 +1,29 @@
 package com.exgou.heqain.dart.helper.utils
 
-import com.intellij.openapi.components.ServiceManager
-import com.intellij.psi.PsiComment
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiWhiteSpace
-import com.intellij.psi.search.PsiSearchHelper
-import com.jetbrains.lang.dart.psi.*
+import com.intellij.codeInsight.CodeInsightBundle
+import com.intellij.codeInsight.TargetElementUtil
+import com.intellij.codeInsight.hint.HintManager
+import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction
+import com.intellij.featureStatistics.FeatureUsageTracker
+import com.intellij.find.actions.ShowUsagesAction
+import com.intellij.lang.LanguageNamesValidation
+import com.intellij.lang.refactoring.NamesValidator
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ex.ActionUtil
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.util.Computable
+import com.intellij.psi.*
+import com.intellij.psi.search.PsiElementProcessor
+import com.jetbrains.lang.dart.psi.DartComponent
+import com.jetbrains.lang.dart.psi.DartEnumDefinition
+import com.jetbrains.lang.dart.psi.DartType
+import org.jetbrains.annotations.Nls
 import java.awt.Toolkit
 import javax.swing.JDialog
 
@@ -17,13 +35,17 @@ object UiUtils {
         dialog.setLocation(screenWidth / 2 - dialog.width / 2, screenHeight / 2 - dialog.height / 2)//设置窗口居中显示
     }
 
-    fun isDartEnum(fieldType: DartType): Boolean {
-        var clazz = fieldType.resolveReference()?.parent;
-        if (null != clazz && clazz is DartClass && clazz.isEnum) {
-            return true;
+    fun isDartEnum(fieldType: DartType, editor: Editor?): Boolean {
+        var project = editor?.project!!
+        val offset: Int = fieldType.textOffset
+        val elements = GotoDeclarationAction.findAllTargetElements(project, editor, offset);
+        val element = if (elements.isEmpty()) null else elements[0];
+        if (null == element || null == element.parent) {
+            return false;
         }
-        return false;
+        return element.parent is DartEnumDefinition;
     }
+
 
     fun getPsiComment(field: DartComponent): MutableList<PsiComment> {
         var comments = mutableListOf<PsiComment>();
