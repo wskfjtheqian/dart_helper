@@ -50,7 +50,7 @@ class AddClassByJsonAction : AnAction() {
         return dartClass == null
     }
 
-    private fun getEditorAndPsiFile(e: AnActionEvent): @NotNull Pair<Any?, Any?> {
+    private fun getEditorAndPsiFile(e: AnActionEvent): Pair<Any?, Any?> {
         return if (e.getData(CommonDataKeys.PROJECT) == null) {
             Pair.create(null as Any?, null as Any?)
         } else {
