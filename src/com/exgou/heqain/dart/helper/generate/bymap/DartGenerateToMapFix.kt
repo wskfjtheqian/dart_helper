@@ -105,7 +105,10 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
     }
 
     private fun fromDateTime(name: String?): String {
-        return " '-\${$name.month.toString().padLeft(2, '0')}'\n" +
+        return "null==$name\n" +
+                "?null\n" +
+                ":'\${$name.year.toString().padLeft(4, '0')}'\n" +
+                "'-\${$name.month.toString().padLeft(2, '0')}'\n" +
                 "'-\${$name.day.toString().padLeft(2, '0')}'\n" +
                 "' \${$name.hour.toString().padLeft(2, '0')}'\n" +
                 "':\${$name.minute.toString().padLeft(2, '0')}'\n" +

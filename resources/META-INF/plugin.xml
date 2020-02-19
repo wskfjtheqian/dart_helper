@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>dart.helper.exgou.cn</id>
   <name>Dart Helper</name>
-  <version>1.0</version>
+  <version>1.1</version>
   <vendor email="wskfjtheqian@163.com" url="https://github.com/wskfjtheqian">wskfjtheqian</vendor>
 
   <description><![CDATA[
@@ -29,6 +29,7 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      toMap 函数日期添加空指针判断
     ]]>
   </change-notes>
 
