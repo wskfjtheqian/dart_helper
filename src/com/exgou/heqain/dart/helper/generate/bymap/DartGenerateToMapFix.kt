@@ -62,6 +62,15 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         return fromItem(field?.name, fieldType, editor);
     }
 
+    private fun isParameters(param: String?): Boolean {
+        myDartClass.typeParameters?.typeParameterList?.forEach {
+            if (it.text == param) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private fun fromItem(name: String?, fieldType: DartType?, editor: Editor): String {
         if (null != fieldType) {
             var expression: DartReferenceExpression? = fieldType.referenceExpression
@@ -72,11 +81,14 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
                     "int" -> return "$name";
                     "double" -> return "$name";
                     "String" -> return "$name";
+                    "bool" -> return "${name}?.toString()";
                     "DateTime" -> return fromDateTime(name);
                     "List" -> return fromList(name, fieldType, editor);
                     "Map" -> return fromMap(name, fieldType, editor);
                 }
-
+                if (isParameters(expression?.text)) {
+                    return "($name as dynamic)?.toMap()";
+                }
                 return "$name?.toMap()";
             }
 
@@ -105,15 +117,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
     }
 
     private fun fromDateTime(name: String?): String {
-        return "null==$name\n" +
-                "?null\n" +
-                ":'\${$name.year.toString().padLeft(4, '0')}'\n" +
-                "'-\${$name.month.toString().padLeft(2, '0')}'\n" +
-                "'-\${$name.day.toString().padLeft(2, '0')}'\n" +
-                "' \${$name.hour.toString().padLeft(2, '0')}'\n" +
-                "':\${$name.minute.toString().padLeft(2, '0')}'\n" +
-                "':\${$name.second.toString().padLeft(2, '0')}'\n" +
-                "'.\${$name.millisecond.toString().padLeft(3, '0')}'";
+        return "${name}?.toString()";
     }
 
 }

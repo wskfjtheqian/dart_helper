@@ -12,6 +12,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.lang.dart.ide.generation.BaseCreateMethodsFix
 import com.jetbrains.lang.dart.psi.*
+import com.jetbrains.lang.dart.util.DartGenericSpecialization
 
 class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
     override fun processElements(project: Project, editor: Editor, elementsToProcess: MutableSet<DartComponent>) {
@@ -37,7 +38,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
     fun buildFunctionsText(templateManager: TemplateManager, dartComponent: MutableSet<DartComponent>, editor: Editor): Template? {
         val template = templateManager.createTemplate(this.javaClass.name, "Dart")
         template.isToReformat = true
-        template.addTextSegment("factory ${myDartClass.name}.fromMap(Map<String, dynamic> map) {")
+        template.addTextSegment(careteFactory(myDartClass))
         template.addTextSegment("if (null == map) return null;")
         template.addTextSegment("var temp;")
         template.addTextSegment("return ${myDartClass.name}(")
@@ -53,10 +54,28 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         return template
     }
 
+    private fun careteFactory(myDartClass: DartClass): String {
+        var ret = "factory ${myDartClass.name}.fromMap(dynamic map"
+        myDartClass.typeParameters?.typeParameterList?.forEach {
+            ret += "," + it.text + " Function(dynamic map) call" + it.text
+        }
+
+        return "$ret) {";
+    }
+
     private fun addItem(field: DartComponent, isOne: Boolean, editor: Editor): String? {
         var jsonName: String? = getJsonName(field);
         var fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java)
         return fromItem("map['${jsonName ?: field?.name}']", fieldType, editor, isOne)
+    }
+
+    private fun isParameters(param: String?): Boolean {
+        myDartClass.typeParameters?.typeParameterList?.forEach {
+            if (it.text == param) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private fun fromItem(name: String?, fieldType: DartType?, editor: Editor, isOne: Boolean = false): String? {
@@ -74,6 +93,9 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
                     "List" -> return toList(name, fieldType, editor, isOne)
                     "Map" -> return toMap(name, fieldType, editor, isOne)
                     "dynamic" -> return name
+                }
+                if (isParameters(expression?.text)) {
+                    return "call${expression?.text}($name)"
                 }
                 if (isOne) {
                     return "${expression?.text}.fromMap($name)"
@@ -118,7 +140,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         } else if (!isOne) {
             return "$name?.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0), editor)},${fromItem("value", typeList?.get(1), editor)}))??{}"
         }
-        return "null == (temp = $name) ? [] : (temp is Map ? temp.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0), editor)},${fromItem("value", typeList?.get(1), editor)})):[])"
+        return "null == (temp = $name) ? {} : (temp is Map ? temp.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0), editor)},${fromItem("value", typeList?.get(1), editor)})):{})"
     }
 
     private fun toInt(name: String?, isOne: Boolean): String {
@@ -138,7 +160,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
 
     private fun toString(name: String?, isOne: Boolean): String {
         if (!isOne) {
-            return "value?.toString()"
+            return "$name?.toString()"
         }
         return "$name?.toString()"
     }

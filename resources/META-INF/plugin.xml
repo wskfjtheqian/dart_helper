@@ -1,10 +1,10 @@
 <idea-plugin>
-  <id>dart.helper.exgou.cn</id>
-  <name>Dart Helper</name>
-  <version>1.1</version>
-  <vendor email="wskfjtheqian@163.com" url="https://github.com/wskfjtheqian">wskfjtheqian</vendor>
+    <id>dart.helper.exgou.cn</id>
+    <name>Dart Helper</name>
+    <version>1.2</version>
+    <vendor email="wskfjtheqian@163.com" url="https://github.com/wskfjtheqian">wskfjtheqian</vendor>
 
-  <description><![CDATA[
+    <description><![CDATA[
      Dart 语言开发辅助工具,
      <br>
      1.根据Json数据创建 Dart 文件
@@ -20,7 +20,7 @@
       <br>
      支持数据类型
       <br>
-     int,double,String,bool,DateTime,List,Map,enum,class
+     int,double,String,bool,DateTime,List,Map,enum,class,泛型
       <br>
       <br>
       https://gitee.com/wskfjt/dart_helper
@@ -28,58 +28,60 @@
       https://github.com/wskfjtheqian/dart_helper
     ]]></description>
 
-  <change-notes><![CDATA[
-      toMap 函数日期添加空指针判断
-
+    <change-notes><![CDATA[
+      修改DateTime类型 toMap生成方式 <br>
+      修改bool类型 toMap生成错误的BUG <br>
+      修改Map类型formMap生成错误的BUG <br>
+      添加泛型支持 <br>
     ]]>
-  </change-notes>
+    </change-notes>
 
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="173.0"/>
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="173.0"/>
 
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-       on how to target different products -->
-  <depends>com.intellij.modules.platform</depends>
-  <depends>Dart</depends>
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>Dart</depends>
 
-  <extensions defaultExtensionNs="com.intellij">
-    <!-- Add your extensions here -->
-  </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
 
-  <actions>
-    <action id="josn.to.dart.object" class="com.exgou.heqain.dart.helper.news.JsonToDartObjectAction"
-            icon="/icons/dart_iocn.png"
-            text="JsonToDartObjectAction" description="JsonToDartObjectAction">
-      <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
-    </action>
-    <action id="Dart.Generate.Named.Action" icon="/icons/dart_iocn.png"
-            class="com.exgou.heqain.dart.helper.generate.name.DartGenerateNamedAction"
-            text="Dart Generate Name">
-      <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
-    </action>
+    <actions>
+        <action id="josn.to.dart.object" class="com.exgou.heqain.dart.helper.news.JsonToDartObjectAction"
+                icon="/icons/dart_iocn.png"
+                text="JsonToDartObjectAction" description="JsonToDartObjectAction">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
+        </action>
+        <action id="Dart.Generate.Named.Action" icon="/icons/dart_iocn.png"
+                class="com.exgou.heqain.dart.helper.generate.name.DartGenerateNamedAction"
+                text="Dart Generate Name">
+            <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
+        </action>
 
-    <action id="Dart.Generate.formMap.Action" icon="/icons/dart_iocn.png"
-            class="com.exgou.heqain.dart.helper.generate.bymap.DartGenerateFromMapAction"
-            text="Dart Generate FormMap">
-      <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
-    </action>
+        <action id="Dart.Generate.formMap.Action" icon="/icons/dart_iocn.png"
+                class="com.exgou.heqain.dart.helper.generate.bymap.DartGenerateFromMapAction"
+                text="Dart Generate FormMap">
+            <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
+        </action>
 
-    <action id="Dart.Generate.toMap.Action" icon="/icons/dart_iocn.png"
-            class="com.exgou.heqain.dart.helper.generate.bymap.DartGenerateToMapAction"
-            text="Dart Generate ToMap">
-      <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
-    </action>
+        <action id="Dart.Generate.toMap.Action" icon="/icons/dart_iocn.png"
+                class="com.exgou.heqain.dart.helper.generate.bymap.DartGenerateToMapAction"
+                text="Dart Generate ToMap">
+            <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
+        </action>
 
-    <action id="Dart.Generate.AddClassByJson.Action" icon="/icons/dart_iocn.png"
-            class="com.exgou.heqain.dart.helper.generate.json.AddClassByJsonAction"
-            text="Add Class By Json">
-      <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
-    </action>
+        <action id="Dart.Generate.AddClassByJson.Action" icon="/icons/dart_iocn.png"
+                class="com.exgou.heqain.dart.helper.generate.json.AddClassByJsonAction"
+                text="Add Class By Json">
+            <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
+        </action>
 
-    <action id="ExportToDoc" class="com.exgou.heqain.dart.helper.printing.ExportToDocAction" text="Export To Doc"
-            description="Export File To Doc File">
-      <add-to-group group-id="PrintExportGroup" anchor="last"/>
-    </action>
-  </actions>
+        <action id="ExportToDoc" class="com.exgou.heqain.dart.helper.printing.ExportToDocAction" text="Export To Doc"
+                description="Export File To Doc File">
+            <add-to-group group-id="PrintExportGroup" anchor="last"/>
+        </action>
+    </actions>
 
 </idea-plugin>

@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="lib">
+    <CLASSES>
+      <root url="file://$APPLICATION_PLUGINS_DIR$/Dart/lib" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$APPLICATION_PLUGINS_DIR$/Dart/lib" recursive="false" />
+  </library>
+</component>
