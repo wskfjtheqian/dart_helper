@@ -1,18 +1,14 @@
 package com.exgou.heqain.dart.helper.generate.bymap
 
-import com.exgou.heqain.dart.helper.utils.UiUtils
 import com.exgou.heqain.dart.helper.utils.UiUtils.getJsonName
 import com.exgou.heqain.dart.helper.utils.UiUtils.isDartEnum
 import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiComment
-import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.lang.dart.ide.generation.BaseCreateMethodsFix
 import com.jetbrains.lang.dart.psi.*
-import com.jetbrains.lang.dart.util.DartGenericSpecialization
 
 class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
     override fun processElements(project: Project, editor: Editor, elementsToProcess: MutableSet<DartComponent>) {
@@ -98,14 +94,24 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
                     return "call${expression?.text}($name)"
                 }
                 if (isOne) {
-                    return "${expression?.text}.fromMap($name)"
+                    return "${expression?.text}.fromMap($name ${getTypeList(fieldType, editor)})"
                 } else {
-                    return "${expression?.text}.fromMap(value)"
+                    return "${expression?.text}.fromMap(value ${getTypeList(fieldType, editor)})"
                 }
             }
         }
         return name
     }
+
+    private fun getTypeList(fieldType: DartType, editor: Editor): String {
+        var typeList = fieldType.typeArguments?.typeList?.typeList
+        var ret: String = ""
+        typeList?.forEach {
+            ret += ",(value)=>" + fromItem(it.name, it, editor)
+        }
+        return ret;
+    }
+
 
     private fun toBool(name: String?, isOne: Boolean): String? {
         if (!isOne) {

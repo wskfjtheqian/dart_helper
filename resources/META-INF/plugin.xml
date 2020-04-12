@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>dart.helper.exgou.cn</id>
     <name>Dart Helper</name>
-    <version>1.2</version>
+    <version>1.2.1</version>
     <vendor email="wskfjtheqian@163.com" url="https://github.com/wskfjtheqian">wskfjtheqian</vendor>
 
     <description><![CDATA[
@@ -29,10 +29,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
-      修改DateTime类型 toMap生成方式 <br>
-      修改bool类型 toMap生成错误的BUG <br>
-      修改Map类型formMap生成错误的BUG <br>
-      添加泛型支持 <br>
+      修改泛型BUG <br>
     ]]>
     </change-notes>
 
@@ -55,7 +52,7 @@
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
         </action>
         <action id="Dart.Generate.Named.Action" icon="/icons/dart_iocn.png"
-                class="com.exgou.heqain.dart.helper.generate.name.DartGenerateNamedAction"
+                class="com.exgou.heqain.dart.helper.generate.name.DartGenerateUpdateAction"
                 text="Dart Generate Name">
             <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
         </action>

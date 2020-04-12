@@ -10,7 +10,7 @@ import com.jetbrains.lang.dart.psi.DartComponent
 class DartGenerateNamedHandler : BaseDartGenerateHandler() {
 
     override fun getTitle(): String {
-        return "adfasdf"
+        return "Generate Name"
     }
 
     override fun createFix(dartClass: DartClass): BaseCreateMethodsFix<*> {
