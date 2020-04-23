@@ -1,35 +1,35 @@
 <idea-plugin>
     <id>dart.helper.exgou.cn</id>
     <name>Dart Helper</name>
-    <version>1.2.1</version>
-    <vendor email="wskfjtheqian@163.com" url="https://github.com/wskfjtheqian">wskfjtheqian</vendor>
+    <version>1.2.2</version>
+    <vendor email="wskfjtheqian@gmail.com" url="https://github.com/wskfjtheqian">wskfjtheqian</vendor>
 
     <description><![CDATA[
-     Dart 语言开发辅助工具,
-     <br>
-     1.根据Json数据创建 Dart 文件
-      <br>
-     2.根据Json数据添加 Dart 类（class）
-      <br>
-     3.添加 formMap函数
-      <br>
-     4.添加 toMap函数
-      <br>
-     5.将代码输出到 Word文档
-      <br>
-      <br>
-     支持数据类型
-      <br>
-     int,double,String,bool,DateTime,List,Map,enum,class,泛型
-      <br>
-      <br>
-      https://gitee.com/wskfjt/dart_helper
-      <br>
-      https://github.com/wskfjtheqian/dart_helper
+        Dart language development aids,
+        <br>
+        1. Create dart file based on JSON data
+        <br>
+        2. Add dart class according to JSON data
+        <br>
+        3. Add formmap function
+        <br>
+        4. Add tomap function
+        <br>
+        5. Output code to word document
+        <br>
+        <br>
+        Support data types
+        <br>
+        Int, double, string, bool, datetime, list, map, enum, class, generic
+        <br>
+        <br>
+        https://gitee.com/wskfjt/dart_helper
+        <br>
+        https://github.com/wskfjtheqian/dart_helper
     ]]></description>
 
     <change-notes><![CDATA[
-      修改泛型BUG <br>
+        Modify generic bug < br >
     ]]>
     </change-notes>
 
