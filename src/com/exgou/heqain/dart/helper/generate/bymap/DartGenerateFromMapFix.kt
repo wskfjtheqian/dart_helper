@@ -1,7 +1,7 @@
 package com.exgou.heqain.dart.helper.generate.bymap
 
+import com.exgou.heqain.dart.helper.utils.UiUtils
 import com.exgou.heqain.dart.helper.utils.UiUtils.getJsonName
-import com.exgou.heqain.dart.helper.utils.UiUtils.isDartEnum
 import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.openapi.editor.Editor
@@ -62,8 +62,48 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
     private fun addItem(field: DartComponent, isOne: Boolean, editor: Editor): String? {
         var jsonName: String? = getJsonName(field);
         var fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java)
-        return fromItem("map['${jsonName ?: field?.name}']", fieldType, editor, isOne)
+        return fromItem(fieldType, "map['${jsonName ?: field?.name}']", editor)
     }
+
+    private fun fromItem(type: DartType?, key: String, editor: Editor): String {
+        var expression: DartReferenceExpression? = type?.referenceExpression
+        if (UiUtils.isDartEnum(type!!, editor)) {
+            return "null == (temp = $key) ? null : (temp is num ? ${expression?.text}.values[temp.toInt()] : ${expression?.text}.values[int.tryParse(temp)])"
+        }
+        if (isParameters(expression?.text)) {
+            return "call${expression?.text}($key)"
+        }
+        when (expression?.text) {
+            "int" -> return "null == (temp = $key) ? null : (temp is num ? temp.toInt() : int.tryParse(temp))"
+            "double" -> return "null ==(temp = $key) ? null : (temp is num ? temp.toDouble() : double.tryParse(temp))"
+            "bool" -> return "null == (temp = $key) ? null : (temp is bool ? temp : bool.fromEnvironment(temp))"
+            "String" -> return "$key?.toString()"
+            "DateTime" -> return "null == (temp = $key) ? null : DateTime.parse(temp.toString())"
+            "List" -> {
+                var typeList = type?.typeArguments?.typeList?.typeList
+                return if (null == typeList || typeList.isEmpty()) {
+                    "null == (temp = $key) ? [] : (temp is List ? temp : [])"
+                } else {
+                    "null == (temp = $key) ? [] : (temp is List ? temp.map((map)=>${fromItem(typeList[0], "map", editor)}).toList() : [])"
+                }
+            }
+            "Map" -> {
+                var typeList = type?.typeArguments?.typeList?.typeList
+                return if (null == typeList || typeList.isEmpty()) {
+                    "null == (temp = $key) ? {} : (temp is Map ? temp : {})"
+                } else {
+                    "null == (temp = $key) ? {} : (temp is Map ? temp.map((key, map) => MapEntry(${fromItem(typeList[0], "key", editor)}, ${fromItem(typeList[1], "map", editor)})):{})"
+                }
+            }
+        }
+        var typeList = type?.typeArguments?.typeList?.typeList
+        var ret: String = ""
+        typeList?.forEach {
+            ret += "," + "(map) =>" + fromItem(it, "map", editor)
+        }
+        return "${expression?.text}.fromMap(temp $ret)"
+    }
+
 
     private fun isParameters(param: String?): Boolean {
         myDartClass.typeParameters?.typeParameterList?.forEach {
@@ -73,110 +113,4 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         }
         return false;
     }
-
-    private fun fromItem(name: String?, fieldType: DartType?, editor: Editor, isOne: Boolean = false): String? {
-        if (null != fieldType) {
-            var expression: DartReferenceExpression? = fieldType.referenceExpression
-            if (isDartEnum(fieldType!!, editor)) {
-                return toEnum(name, expression?.text, isOne);
-            } else {
-                when (expression?.text) {
-                    "int" -> return toInt(name, isOne)
-                    "double" -> return toDouble(name, isOne)
-                    "bool" -> return toBool(name, isOne)
-                    "String" -> return toString(name, isOne)
-                    "DateTime" -> return toDateTime(name, isOne)
-                    "List" -> return toList(name, fieldType, editor, isOne)
-                    "Map" -> return toMap(name, fieldType, editor, isOne)
-                    "dynamic" -> return name
-                }
-                if (isParameters(expression?.text)) {
-                    return "call${expression?.text}($name)"
-                }
-                if (isOne) {
-                    return "${expression?.text}.fromMap($name ${getTypeList(fieldType, editor)})"
-                } else {
-                    return "${expression?.text}.fromMap(value ${getTypeList(fieldType, editor)})"
-                }
-            }
-        }
-        return name
-    }
-
-    private fun getTypeList(fieldType: DartType, editor: Editor): String {
-        var typeList = fieldType.typeArguments?.typeList?.typeList
-        var ret: String = ""
-        typeList?.forEach {
-            ret += ",(value)=>" + fromItem(it.name, it, editor)
-        }
-        return ret;
-    }
-
-
-    private fun toBool(name: String?, isOne: Boolean): String? {
-        if (!isOne) {
-            return "null == (value) ? null : (value is bool ? value :(value is num ? 0 != value : bool.fromEnvironment(value.toString())))"
-        }
-        return "null == (temp = $name) ? null : (temp is bool ? temp :(temp is num ? 0 != temp : bool.fromEnvironment(temp.toString())))"
-    }
-
-    private fun toEnum(name: String?, enumName: String?, isOne: Boolean): String? {
-        if (!isOne) {
-            return "null == (value) ? null : (value is num ? $enumName.values[value.toInt()] : $enumName.values[int.tryParse(value)])"
-        }
-        return "null == (temp = $name) ? null : (temp is num ? $enumName.values[temp.toInt()] : $enumName.values[int.tryParse(temp)])"
-    }
-
-    private fun toList(name: String?, fieldType: DartType, editor: Editor, isOne: Boolean): String {
-        var typeList = fieldType.typeArguments?.typeList?.typeList
-
-        if (null == typeList || 0 == typeList.size) {
-            return "$name??[]"
-        } else if (!isOne) {
-            return "$name?.map((value)=>${fromItem("value", typeList?.get(0), editor)})?.toList()??[]"
-        }
-        return "null == (temp = $name) ? [] : (temp is List ? temp.map((value)=>${fromItem("value", typeList?.get(0), editor)}).toList() : [])"
-    }
-
-    private fun toMap(name: String?, fieldType: DartType, editor: Editor, isOne: Boolean): String {
-        var typeList = fieldType.typeArguments?.typeList?.typeList
-
-        if (null == typeList || 0 == typeList.size) {
-            return "$name??{}"
-        } else if (!isOne) {
-            return "$name?.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0), editor)},${fromItem("value", typeList?.get(1), editor)}))??{}"
-        }
-        return "null == (temp = $name) ? {} : (temp is Map ? temp.map((key,value)=> MapEntry(${fromItem("key", typeList?.get(0), editor)},${fromItem("value", typeList?.get(1), editor)})):{})"
-    }
-
-    private fun toInt(name: String?, isOne: Boolean): String {
-        if (!isOne) {
-            return "null == (value) ? null : (value is num ? value.toInt() : int.tryParse(value))"
-        }
-        return "null == (temp = $name) ? null : (temp is num ? temp.toInt() : int.tryParse(temp))"
-    }
-
-    private fun toDouble(name: String?, isOne: Boolean): String {
-        if (!isOne) {
-            return "null == (value) ? null : (value is num ? value.toDouble() : double.tryParse(value))"
-        }
-        return "null == (temp = $name) ? null : (temp is num ? temp.toDouble() : double.tryParse(temp))"
-
-    }
-
-    private fun toString(name: String?, isOne: Boolean): String {
-        if (!isOne) {
-            return "$name?.toString()"
-        }
-        return "$name?.toString()"
-    }
-
-    private fun toDateTime(name: String?, isOne: Boolean): String {
-        if (!isOne) {
-            return "null == (value) ? null : DateTime.tryParse(value)"
-        }
-        return "null == (temp = $name) ? null : DateTime.tryParse(temp)"
-    }
-
-
 }

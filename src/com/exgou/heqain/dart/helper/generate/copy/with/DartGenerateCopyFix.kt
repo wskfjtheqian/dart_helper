@@ -1,4 +1,5 @@
-package com.exgou.heqain.dart.helper.generate.name
+package com.exgou.heqain.dart.helper.generate.copy.with
+
 import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.codeInsight.template.impl.TextExpression
@@ -8,7 +9,7 @@ import com.jetbrains.lang.dart.ide.generation.BaseCreateMethodsFix
 import com.jetbrains.lang.dart.psi.DartClass
 import com.jetbrains.lang.dart.psi.DartComponent
 
-class DartGenerateNamedFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
+open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
 
     override fun processElements(project: Project, editor: Editor, elementsToProcess: Set<DartComponent>) {
         val templateManager = TemplateManager.getInstance(project)
@@ -20,22 +21,35 @@ class DartGenerateNamedFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
     }
 
     protected fun buildFunctionsText(templateManager: TemplateManager, elementsToProcess: Set<DartComponent>): Template {
-        val template = templateManager.createTemplate(this.javaClass.name, "DartName")
+        val template = templateManager.createTemplate(this.javaClass.name, "copyWith")
         template.isToReformat = true
         template.addTextSegment(this.myDartClass.name!!)
-        template.addTextSegment(".")
-        template.addVariable(TextExpression("name"), true)
+        template.addTextSegment(" ")
+        template.addVariable(TextExpression("copyWith"), true)
         template.addTextSegment(if (elementsToProcess.isEmpty()) "(" else "({")
-        val iterator = elementsToProcess.iterator()
 
-        while (iterator.hasNext()) {
-            template.addTextSegment("this.")
-            template.addTextSegment(iterator.next().name!!)
+        elementsToProcess.forEach {
+            template.addTextSegment(it.text)
             template.addTextSegment(",")
         }
 
-        template.addTextSegment(if (elementsToProcess.isEmpty()) ");" else "});")
+        template.addTextSegment(if (elementsToProcess.isEmpty()) ");" else "}){")
+        template.addTextSegment("return ")
+        template.addTextSegment(this.myDartClass.name!!)
+        template.addTextSegment("(")
+
+        elementsToProcess.forEach {
+            template.addTextSegment(it.name!!)
+            template.addTextSegment(":")
+            template.addTextSegment(it.name!!)
+            template.addTextSegment("??this.")
+            template.addTextSegment(it.name!!)
+            template.addTextSegment(",")
+        }
+
+        template.addTextSegment(");")
         template.addEndVariable()
+        template.addTextSegment(" }")
         template.addTextSegment(" ")
         return template
     }
