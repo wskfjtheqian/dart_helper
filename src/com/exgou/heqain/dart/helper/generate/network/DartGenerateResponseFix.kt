@@ -12,7 +12,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.lang.dart.psi.*
 
-class DartGenerateRequestFix(val project: Project, val editor: Editor, private val method: DartMethodDeclaration) {
+class DartGenerateResponseFix(val project: Project, val editor: Editor, private val method: DartMethodDeclaration) {
 
     fun process() {
         val templateManager = TemplateManager.getInstance(project);
@@ -54,7 +54,7 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
         template.addTextSegment("\nvar request = ")
         template.addTextSegment("dio.")
         var requestMethod = getRequestMethod();
-        template.addTextSegment(if (requestMethod.isEmpty()) "post" else requestMethod)
+        template.addTextSegment(requestMethod)
         template.addTextSegment("<Map>(")
 
         template.addVariable(TextExpression("\"${getUrl(requestMethod)}\""), true)
@@ -189,7 +189,7 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
         } else if (0 == name.indexOf("patch")) {
             return "patch";
         }
-        return "";
+        return "post";
     }
 
     private fun getUrl(requestMethod: String): String {
