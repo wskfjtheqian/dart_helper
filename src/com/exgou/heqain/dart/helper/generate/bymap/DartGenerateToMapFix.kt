@@ -48,7 +48,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         elementsToProcess.forEach {
             var jsonName: String? = UiUtils.getJsonName(it);
             template.addTextSegment("'${jsonName ?: it?.name}':")
-            template.addTextSegment(addItem(it, editor))
+            template.addTextSegment("${addItem(it, editor)}")
             template.addTextSegment(",")
         }
 
@@ -57,9 +57,9 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         return template
     }
 
-    private fun addItem(field: DartComponent, editor: Editor): String {
+    private fun addItem(field: DartComponent, editor: Editor): String? {
         var fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java);
-        return fromItem(field?.name, fieldType, editor);
+        return fromItem(fieldType, field?.name!!, editor);
     }
 
     private fun isParameters(param: String?): Boolean {
@@ -71,53 +71,38 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         return false;
     }
 
-    private fun fromItem(name: String?, fieldType: DartType?, editor: Editor): String {
-        if (null != fieldType) {
-            var expression: DartReferenceExpression? = fieldType.referenceExpression
-            if (UiUtils.isDartEnum(fieldType!!, editor)) {
-                return fromEnum(name);
-            } else {
-                when (expression?.text) {
-                    "int" -> return "$name";
-                    "double" -> return "$name";
-                    "String" -> return "$name";
-                    "bool" -> return "${name}?.toString()";
-                    "DateTime" -> return fromDateTime(name);
-                    "List" -> return fromList(name, fieldType, editor);
-                    "Map" -> return fromMap(name, fieldType, editor);
+    private fun fromItem(type: DartType?, key: String, editor: Editor): String? {
+        var expression: DartReferenceExpression? = type?.referenceExpression
+        if (UiUtils.isDartEnum(type!!, editor)) {
+            return "$key.index"
+        }
+        if (isParameters(expression?.text)) {
+            return "($key as dynamic)?.toMap()";
+        }
+        when (expression?.text) {
+            "int" -> return key
+            "double" -> return key
+            "bool" -> return key
+            "String" -> return key
+            "DateTime" -> return "$key?.toString()"
+            "List" -> {
+                var typeList = type?.typeArguments?.typeList?.typeList
+                return if (null == typeList || typeList.isEmpty()) {
+                    key
+                } else {
+                    "$key?.map((map)=>${fromItem(typeList[0], "map", editor)})?.toList()??[]"
                 }
-                if (isParameters(expression?.text)) {
-                    return "($name as dynamic)?.toMap()";
-                }
-                return "$name?.toMap()";
             }
-
+            "Map" -> {
+                var typeList = type?.typeArguments?.typeList?.typeList
+                return if (null == typeList || typeList.isEmpty()) {
+                    key
+                } else {
+                    "$key?.map((key, map) => MapEntry(${fromItem(typeList[0], "key", editor)}, ${fromItem(typeList[1], "map", editor)}))??{}"
+                }
+            }
         }
-        return "$name";
-    }
-
-    private fun fromEnum(name: String?): String {
-        return "$name?.index"
-    }
-
-    private fun fromList(name: String?, fieldType: DartType, editor: Editor): String {
-        var typeList = fieldType.typeArguments?.typeList?.typeList;
-        if (null == typeList || 0 == typeList.size) {
-            return "$name??[]";
-        }
-        return "$name?.map((value)=>${fromItem("value", typeList?.get(0), editor)})?.toList()??[]";
-    }
-
-    private fun fromMap(name: String?, fieldType: DartType, editor: Editor): String {
-        var typeList = fieldType.typeArguments?.typeList?.typeList;
-        if (null == typeList || 0 == typeList.size) {
-            return "$name??{}";
-        }
-        return "$name?.map((key, value) => MapEntry(${fromItem("key", typeList?.get(0), editor)}, ${fromItem("value", typeList?.get(1), editor)}))??{}";
-    }
-
-    private fun fromDateTime(name: String?): String {
-        return "${name}?.toString()";
+        return "$key?.toMap()"
     }
 
 }

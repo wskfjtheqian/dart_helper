@@ -1,9 +1,11 @@
 package com.exgou.heqain.dart.helper.generate.network
 
 import com.exgou.heqain.dart.helper.utils.UiUtils
+import com.exgou.heqain.dart.helper.utils.UiUtils.getRequestUrl
 import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.codeInsight.template.impl.TextExpression
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -16,11 +18,16 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
         val templateManager = TemplateManager.getInstance(project);
         var template: Template = this.buildFunctionsText(templateManager, editor) ?: return;
 
-        val anchor: PsiElement? = method.functionBody!!.firstChild.firstChild.nextSibling;
-        editor.caretModel.moveToOffset(anchor!!.textRange.startOffset)
-        templateManager.startTemplate(editor, template)
-        val dartComponent: PsiElement? = PsiTreeUtil.getParentOfType(anchor!!.findElementAt(editor.caretModel.offset), DartComponent::class.java)
-
+        WriteCommandAction.runWriteCommandAction(project) {
+            val anchor: PsiElement? = method.functionBody!!.firstChild.firstChild.nextSibling;
+            editor.caretModel.moveToOffset(anchor!!.textRange.startOffset)
+            method.functionBody?.deleteChildRange(
+                    method.functionBody!!.firstChild.firstChild.nextSibling,
+                    method.functionBody!!.lastChild.lastChild.prevSibling
+            )
+            templateManager.startTemplate(editor, template)
+            val dartComponent: PsiElement? = PsiTreeUtil.getParentOfType(anchor!!.findElementAt(editor.caretModel.offset), DartComponent::class.java)
+        }
     }
 
     fun getParameter(method: DartMethodDeclaration): Array<DartNormalFormalParameter> {
@@ -50,7 +57,7 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
         template.addTextSegment(requestMethod)
         template.addTextSegment("<Map>(")
 
-        template.addVariable(TextExpression("\"${getUrl()}\""), true)
+        template.addVariable(TextExpression("\"${getUrl(requestMethod)}\""), true)
         var parameters = getParameter(method)
         if (parameters.isNotEmpty()) {
             template.addTextSegment(",")
@@ -62,7 +69,7 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
 
             template.addTextSegment(":{")
             parameters.forEach {
-                template.addTextSegment("${it.simpleFormalParameter?.name}")
+                template.addTextSegment("'${it.simpleFormalParameter?.name}'")
                 template.addTextSegment(":")
                 template.addTextSegment("${createParame(it.simpleFormalParameter!!)}")
                 template.addTextSegment(",")
@@ -185,8 +192,30 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
         return "post";
     }
 
-    private fun getUrl(): String {
-        return "getLogin"
+    private fun getUrl(requestMethod: String): String {
+        var url: String? = getRequestUrl(method);
+        var isUrl = true;
+        if (null == url) {
+            isUrl = false;
+            url = "/" + method.name.toString().substring(requestMethod.length).toLowerCase()
+        }
+        var temp: PsiElement = method;
+        while (null != temp && temp !is DartClass) {
+            temp = temp.parent;
+        }
+        if (null != temp && temp is DartClass) {
+            var classUrl = getRequestUrl(temp);
+            if (null == classUrl) {
+                if (!isUrl) {
+                    temp.implementsList?.forEach {
+                        url = "/" + it.referenceExpression?.text.toString().toLowerCase() + url
+                    }
+                }
+            } else {
+                url = classUrl + url
+            }
+        }
+        return url!!
     }
 
 }

@@ -12,6 +12,7 @@ import com.intellij.openapi.util.Pair
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.lang.dart.psi.DartClass
+import com.jetbrains.lang.dart.psi.DartFile
 import org.jetbrains.annotations.NotNull
 
 class AddClassByJsonAction : AnAction() {
@@ -42,7 +43,7 @@ class AddClassByJsonAction : AnAction() {
         val editor = editorAndPsiFile.first as Editor
         val psiFile = editorAndPsiFile.second as PsiFile
         val caretOffset = editor?.caretModel?.offset ?: -1
-        val enable = psiFile != null && this.doEnable(PsiTreeUtil.getParentOfType(psiFile.findElementAt(caretOffset), DartClass::class.java))
+        val enable = psiFile != null && psiFile is DartFile && this.doEnable(PsiTreeUtil.getParentOfType(psiFile.findElementAt(caretOffset), DartClass::class.java))
         e.presentation.isEnabledAndVisible = enable
     }
 

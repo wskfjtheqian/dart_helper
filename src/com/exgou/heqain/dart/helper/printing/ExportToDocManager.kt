@@ -3,15 +3,11 @@ package com.exgou.heqain.dart.helper.printing
 import com.intellij.CommonBundle
 import com.intellij.codeEditor.printing.*
 import com.intellij.ide.BrowserUtil
-import com.intellij.ide.util.DirectoryUtil
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.colors.EditorColorsManager
-import com.intellij.openapi.editor.colors.EditorColorsScheme
-import com.intellij.openapi.extensions.Extensions
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -20,7 +16,6 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.psi.*
 import com.intellij.psi.impl.file.PsiDirectoryFactory
 import com.intellij.ui.ColorUtil
-
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -68,7 +63,7 @@ object ExportToDocManager {
         if (exportToHTMLSettings.OUTPUT_DIRECTORY == null) {
             outputDirectoryName = (Objects.requireNonNull(project) as Project).basePath
             if (outputDirectoryName != null) {
-                exportToHTMLSettings.OUTPUT_DIRECTORY = outputDirectoryName + "/" + "exportToDoc"
+                exportToHTMLSettings.OUTPUT_DIRECTORY = "$outputDirectoryName/exportToDoc"
             } else {
                 exportToHTMLSettings.OUTPUT_DIRECTORY = ""
             }
@@ -147,13 +142,10 @@ object ExportToDocManager {
     }
 
     private fun constructOutputDirectory(directory: PsiDirectory, outputDirectoryName: String): String {
-        if (directory == null) {
-            //            $$$reportNull$$$0(3);
-        }
 
         val qualifiedName = PsiDirectoryFactory.getInstance(directory.project).getQualifiedName(directory, false)
         var dirName = outputDirectoryName
-        if (qualifiedName.length > 0) {
+        if (qualifiedName.isNotEmpty()) {
             dirName = outputDirectoryName + "/" + qualifiedName.replace('.', '/')
         }
 
@@ -190,7 +182,7 @@ object ExportToDocManager {
             ApplicationManager.getApplication().runReadAction {
                 if (psiFile.isValid) {
                     var refMap: TreeMap<Int, PsiReference>? = null
-                    val var6 = Extensions.getExtensions(PrintOption.EP_NAME) as Array<PrintOption>
+                    val var6 = PrintOption.EP_NAME.extensionList
                     val var7 = var6.size
 
                     for (var8 in 0 until var7) {
@@ -242,7 +234,7 @@ object ExportToDocManager {
                 var psiFile: PsiFile
                 while (var5.hasNext()) {
                     psiFile = var5.next()
-                    filesMap.put(psiFile, psiFile)
+                    filesMap[psiFile] = psiFile
                 }
 
                 val docFile = wTempFile(progressIndicator, filesList, filesMap) ?: return
@@ -256,7 +248,7 @@ object ExportToDocManager {
 
         private fun wTempFile(progressIndicator: ProgressIndicator, filesList: ArrayList<PsiFile>, filesMap: HashMap<PsiFile, PsiFile>): String? {
             val title = myProject.name
-            val htmlFile = myOutputDirectoryName + "/" + title + ".doc"
+            val htmlFile = "$myOutputDirectoryName/$title.doc"
             val exportToHTMLSettings = ExportToHTMLSettings.getInstance(myProject)
 
             var psiFile: PsiFile
@@ -285,7 +277,7 @@ object ExportToDocManager {
                         return null
                     }
 
-                    progressIndicator.text = CodeEditorBundle.message("export.to.html.generating.file.progress", *arrayOf<Any>(getHTMLFileName(psiFile)))
+                    progressIndicator.text = CodeEditorBundle.message("export.to.html.generating.file.progress", getHTMLFileName(psiFile))
                     progressIndicator.fraction = i.toDouble() / filesList.size.toDouble()
 
 

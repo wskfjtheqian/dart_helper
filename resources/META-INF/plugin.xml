@@ -29,9 +29,11 @@
     ]]></description>
 
     <change-notes><![CDATA[
-        Add copy <br>
-    ]]>
-    </change-notes>
+        0. Add copyWith function
+         <br>
+        1. Add auto create dio request code
+         <br>
+    ]]></change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
     <idea-version since-build="182.0"/>
@@ -54,7 +56,7 @@
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
         </action>
 
-        <group id="Dart.Generate.Helper" icon="/icons/dart_iocn.png" popup="true" text="Dart helper" >
+        <group id="Dart.Generate.Helper" icon="/icons/dart_iocn.png" popup="true" text="Dart helper">
             <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
             <action id="Dart.Generate.Named.Action" icon="/icons/dart_iocn.png"
                     class="com.exgou.heqain.dart.helper.generate.copy.with.DartGenerateCopyAction"
