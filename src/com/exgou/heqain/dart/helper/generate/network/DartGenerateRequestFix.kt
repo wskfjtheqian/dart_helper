@@ -33,8 +33,7 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
     fun getParameter(method: DartMethodDeclaration): Array<DartNormalFormalParameter> {
         val ret: MutableList<DartNormalFormalParameter> = java.util.ArrayList()
         var parameterList: DartFormalParameterList = method.formalParameterList
-        parameterList.children.forEach {
-            print(it);
+        parameterList.children.forEach { it ->
             if (it is DartNormalFormalParameter) {
                 ret.add(it)
             } else if (it is DartOptionalFormalParameters) {

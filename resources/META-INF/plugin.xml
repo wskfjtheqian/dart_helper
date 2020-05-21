@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>dart.helper.exgou.cn</id>
     <name>Dart Helper</name>
-    <version>1.2.4</version>
+    <version>1.2.5</version>
     <vendor email="wskfjtheqian@gmail.com" url="https://github.com/wskfjtheqian">wskfjtheqian</vendor>
 
     <description><![CDATA[
