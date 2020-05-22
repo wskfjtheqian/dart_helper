@@ -8,7 +8,7 @@ import com.jetbrains.lang.dart.ide.generation.BaseDartGenerateHandler
 class DartGenerateNamedAction : BaseDartGenerateAction() {
 
     override fun getGenerateHandler(): BaseDartGenerateHandler {
-        return DartGenerateCopyHandler()
+        return DartGenerateNamedHandler()
     }
 }
 

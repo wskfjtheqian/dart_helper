@@ -101,7 +101,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         typeList?.forEach {
             ret += "," + "(map) =>" + fromItem(it, "map", editor)
         }
-        return "${expression?.text}.fromMap(temp $ret)"
+        return "${expression?.text}.fromMap($key $ret)"
     }
 
 

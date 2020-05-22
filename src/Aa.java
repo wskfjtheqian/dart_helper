@@ -1,10 +1,17 @@
-import java.util.ArrayList;
-import java.util.List;
+interface T {
+    void call();
+}
 
 public class Aa {
 
 
-    public Aa(String vv) {
+    public void B(T b) {
 
+    }
+
+    public Aa(String vv) {
+        B(() -> {
+
+        });
     }
 }

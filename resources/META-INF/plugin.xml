@@ -59,7 +59,7 @@
         <group id="Dart.Generate.Helper" icon="/icons/dart_iocn.png" popup="true" text="Dart helper">
             <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
             <action id="Dart.Generate.Named.Action" icon="/icons/dart_iocn.png"
-                    class="com.exgou.heqain.dart.helper.generate.copy.with.DartGenerateCopyAction"
+                    class="com.exgou.heqain.dart.helper.generate.name.DartGenerateNamedAction"
                     text="Dart Generate Name">
             </action>
             <action id="Dart.Generate.formMap.Action" icon="/icons/dart_iocn.png"
