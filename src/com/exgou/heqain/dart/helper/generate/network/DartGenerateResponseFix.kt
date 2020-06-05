@@ -79,7 +79,7 @@ class DartGenerateResponseFix(val project: Project, val editor: Editor, private 
                 it.children.forEach {
                     if (it is DartDefaultFormalNamedParameter) {
                         var temp = it.normalFormalParameter.simpleFormalParameter;
-                        template.addTextSegment("${temp?.name}")
+                        template.addTextSegment("${temp?.name}:")
                         template.addTextSegment("${paremParse(temp?.type!!, "map['${temp?.name}']", false)}")
                         template.addTextSegment(",\n")
                     }
