@@ -7,6 +7,8 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.util.Pair
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.lang.dart.psi.DartClass
+import com.jetbrains.lang.dart.psi.DartClassDefinition
 import com.jetbrains.lang.dart.psi.DartComponent
 import com.jetbrains.lang.dart.psi.DartMethodDeclaration
 
@@ -19,9 +21,9 @@ class DartGenerateResponseAction : AnAction() {
 
         if (psiFile != null && project != null && editor != null) {
             val caretOffset = editor?.caretModel?.offset ?: -1
-            val method = PsiTreeUtil.getParentOfType(psiFile.findElementAt(caretOffset), DartMethodDeclaration::class.java)
+            val method = PsiTreeUtil.getParentOfType(psiFile.findElementAt(caretOffset), DartClass::class.java)
             if (null != method) {
-                val fix = DartGenerateRequestFix(project, editor, method);
+                val fix = DartGenerateResponseFix(project, editor, method);
                 fix.process();
             }
         }

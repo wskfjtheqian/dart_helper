@@ -104,7 +104,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
     private fun fromItem(type: DartType?, key: String, editor: Editor, onGenericToMap: (Boolean) -> Unit): String? {
         var expression: DartReferenceExpression? = type?.referenceExpression
         if (UiUtils.isDartEnum(type!!, editor)) {
-            return "$key.index"
+            return "$key?.index"
         }
         if (isParameters(expression?.text)) {
             onGenericToMap(true)

@@ -12,169 +12,126 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.lang.dart.psi.*
 
-class DartGenerateResponseFix(val project: Project, val editor: Editor, private val method: DartMethodDeclaration) {
+class DartGenerateResponseFix(val project: Project, val editor: Editor, private val dartClass: DartClass) {
 
     fun process() {
         val templateManager = TemplateManager.getInstance(project);
-        var template: Template = this.buildFunctionsText(templateManager, editor) ?: return;
+        var template: Template?;
 
         WriteCommandAction.runWriteCommandAction(project) {
-            val anchor: PsiElement? = method.functionBody!!.firstChild.firstChild.nextSibling;
-            editor.caretModel.moveToOffset(anchor!!.textRange.startOffset)
-            method.functionBody?.deleteChildRange(
-                    method.functionBody!!.firstChild.firstChild.nextSibling,
-                    method.functionBody!!.lastChild.lastChild.prevSibling
-            )
-            templateManager.startTemplate(editor, template)
-            val dartComponent: PsiElement? = PsiTreeUtil.getParentOfType(anchor!!.findElementAt(editor.caretModel.offset), DartComponent::class.java)
+            var anchor: PsiElement? = dartClass.findMethodByName("getHandlers")
+            if (null != anchor) {
+                template = this.buildFunctionsText(templateManager, editor, false)
+                var method = anchor as DartMethodDeclaration;
+                method.functionBody?.deleteChildRange(
+                        method.functionBody!!.firstChild.firstChild.nextSibling,
+                        method.functionBody!!.lastChild.lastChild.prevSibling
+                )
+                editor.caretModel.moveToOffset(method.functionBody!!.textRange.startOffset + 1);
+            } else {
+                template = this.buildFunctionsText(templateManager, editor, true)
+                anchor = (dartClass as DartClassDefinition).classBody?.lastChild
+                if (null != anchor) {
+                    editor.caretModel.moveToOffset(anchor.textOffset);
+                }
+            }
+            if (null != template) {
+                templateManager.startTemplate(editor, template!!)
+            }
         }
     }
 
-    fun getParameter(method: DartMethodDeclaration): Array<DartNormalFormalParameter> {
-        val ret: MutableList<DartNormalFormalParameter> = java.util.ArrayList()
-        var parameterList: DartFormalParameterList = method.formalParameterList
-        parameterList.children.forEach {
-            print(it);
-            if (it is DartNormalFormalParameter) {
-                ret.add(it)
-            } else if (it is DartOptionalFormalParameters) {
-                it.children.forEach {
-                    if (it is DartDefaultFormalNamedParameter) {
-                        ret.add(it.normalFormalParameter)
+
+    fun buildFunctionsText(templateManager: TemplateManager, editor: Editor, onlyBody: Boolean): Template? {
+        val template = templateManager.createTemplate(this.javaClass.name, "Network Response")
+        if (onlyBody) template.addTextSegment("static Map<String, IHandler> getHandlers(GetRouter getRouter) {\n")
+        template.addTextSegment("  return {\n")
+
+        dartClass.methods.forEach {
+            if (it is DartMethodDeclaration) {
+                if (it.textRange.startOffset > dartClass.textRange.startOffset && it.textRange.endOffset < dartClass.textRange.endOffset) {
+                    if(it.name != "getHandlers"){
+                        addMethods(template, it)
                     }
                 }
             }
         }
-        return ret.toTypedArray()
-    }
-
-
-    fun buildFunctionsText(templateManager: TemplateManager, editor: Editor): Template? {
-        val template = templateManager.createTemplate(this.javaClass.name, "Network Request")
-        template.addTextSegment("\nvar request = ")
-        template.addTextSegment("dio.")
-        var requestMethod = getRequestMethod();
-        template.addTextSegment(requestMethod)
-        template.addTextSegment("<Map>(")
-
-        template.addVariable(TextExpression("\"${getUrl(requestMethod)}\""), true)
-        var parameters = getParameter(method)
-        if (parameters.isNotEmpty()) {
-            template.addTextSegment(",")
-            var temp = "data"
-            if ("get" == requestMethod || "head" == requestMethod || "delete" == requestMethod) {
-                temp = "queryParameters"
-            }
-            template.addTextSegment(temp)
-
-            template.addTextSegment(":{")
-            parameters.forEach {
-                template.addTextSegment("'${it.simpleFormalParameter?.name}'")
-                template.addTextSegment(":")
-                template.addTextSegment("${createParame(it.simpleFormalParameter!!)}")
-                template.addTextSegment(",")
-            }
-            template.addTextSegment("}")
-        }
-        template.addTextSegment(");\n")
-
-        var returnType: DartReturnType? = method.returnType
-        if (null == returnType) {
-            template.addTextSegment("return onMap(request, (map) => map)")
-        } else {
-            var type = returnType.type!!
-            var expression: DartReferenceExpression? = type.referenceExpression
-            if ("Future" == expression?.text) {
-                var typeList = type?.typeArguments?.typeList?.typeList;
-                if (null == typeList || typeList.isEmpty()) {
-                    template.addTextSegment("return onMap(request, (map) => map)")
-                } else {
-                    template.addTextSegment(createReturn(typeList[0]))
-                }
-            } else {
-                template.addTextSegment(createReturn(type))
-            }
-        }
-        template.addTextSegment(";")
+        template.addTextSegment("  };\n")
+        if (onlyBody) template.addTextSegment("}\n")
         return template
     }
 
-    private fun createParame(parameter: DartSimpleFormalParameter): Any? {
-        return parameParse(parameter.type, parameter.name!!);
+    private fun addMethods(template: Template, method: DartMethodDeclaration): Template? {
+        var requestMethod = getRequestMethod(method);
+        template.addVariable(TextExpression("\"${getUrl(requestMethod, method)}\""), true)
+        template.addTextSegment(":")
+        template.addTextSegment(if (requestMethod.isEmpty()) "post" else requestMethod)
+        template.addTextSegment("Handler((Request request, map) {\n")
+        template.addTextSegment("  var temp;\n")
+        template.addTextSegment("  return getRouter(request).${method.name!!}(\n")
+        var parameterList: DartFormalParameterList = method.formalParameterList
+        parameterList.children.forEach {
+            if (it is DartNormalFormalParameter) {
+                var temp = it.simpleFormalParameter;
+                template.addTextSegment("${paremParse(temp?.type!!, "map['${temp?.name}']", false)}")
+                template.addTextSegment(",\n")
+            } else if (it is DartOptionalFormalParameters) {
+                it.children.forEach {
+                    if (it is DartDefaultFormalNamedParameter) {
+                        var temp = it.normalFormalParameter.simpleFormalParameter;
+                        template.addTextSegment("${temp?.name}")
+                        template.addTextSegment("${paremParse(temp?.type!!, "map['${temp?.name}']", false)}")
+                        template.addTextSegment(",\n")
+                    }
+                }
+            }
+        }
+        template.addTextSegment("  );\n")
+        template.addTextSegment("}\n")
+        template.addTextSegment("),\n")
+        return template
     }
 
-    private fun parameParse(type: DartType?, key: String): Any? {
+    private fun paremParse(type: DartType, key: String, isValue: Boolean): String {
+        var value = if (isValue) key else "(temp = $key)"
+        var temp = if (isValue) key else "temp"
+
         var expression: DartReferenceExpression? = type?.referenceExpression
         if (UiUtils.isDartEnum(type!!, editor)) {
-            return "$key.index"
+            return "null == $value ? null : ($temp is num ? ${expression?.text}.values[$temp.toInt()] : ${expression?.text}.values[int.tryParse($temp)])"
         }
         when (expression?.text) {
-            "int" -> return key
-            "double" -> return key
-            "bool" -> return key
-            "String" -> return key
-            "DateTime" -> return "$key?.toString()"
-            "List" -> {
-                var typeList = type?.typeArguments?.typeList?.typeList
-                return if (null == typeList || typeList.isEmpty()) {
-                    key
-                } else {
-                    "$key?.map((map)=>${parameParse(typeList[0], "map")})?.toList()??[]"
-                }
-            }
-            "Map" -> {
-                var typeList = type?.typeArguments?.typeList?.typeList
-                return if (null == typeList || typeList.isEmpty()) {
-                    key
-                } else {
-                    "$key?.map((key, map) => MapEntry(${parameParse(typeList[0], "key")}, ${parameParse(typeList[1], "map")}))??{}"
-                }
-            }
-        }
-        return "$key?.toMap()"
-    }
-
-    private fun createReturn(type: DartType): String {
-        return "return onMap<${type?.text}>(request, (map) => ${returnParse(type, "map")})"
-    }
-
-    private fun returnParse(type: DartType, key: String): String {
-        var expression: DartReferenceExpression? = type.referenceExpression
-        if (UiUtils.isDartEnum(type!!, editor)) {
-            return "null == $key ? null : ($key is num ? ${expression?.text}.values[$key.toInt()] : ${expression?.text}.values[int.tryParse($key)])"
-        }
-        when (expression?.text) {
-            "int" -> return "null == $key ? null : ($key is num ? $key.toInt() : int.tryParse($key))"
-            "double" -> return "null == $key ? null : ($key is num ? $key.toDouble() : double.tryParse($key))"
-            "bool" -> return "null == $key ? null : ($key is bool ? $key : bool.fromEnvironment($key))"
+            "int" -> return "null == $value ? null : ($temp is num ? $temp.toInt() : int.tryParse($temp))"
+            "double" -> return "null ==$value ? null : ($temp is num ? $temp.toDouble() : double.tryParse($temp))"
+            "bool" -> return "null == $value ? null : ($temp is bool ? $temp : bool.fromEnvironment($temp))"
             "String" -> return "$key?.toString()"
-            "DateTime" -> return "null == $key ? null : DateTime.parse($key.toString())"
+            "DateTime" -> return "null == $value ? null : ($temp is DateTime ? $temp : DateTime.tryParse($temp))"
             "List" -> {
                 var typeList = type?.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
-                    "null == $key ? [] : ($key is List ? $key : [])"
+                    "null == $value ? [] : ($temp is List ? $temp : [])"
                 } else {
-                    "null == $key ? [] : ($key is List ? $key.map((map)=>${returnParse(typeList[0], "map")}).toList() : [])"
+                    "null == $value ? [] : ($temp is List ? $temp.map((map)=>${paremParse(typeList[0], "map", true)}).toList() : [])"
                 }
             }
             "Map" -> {
                 var typeList = type?.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
-                    "null == $key ? {} : ($key is Map ? $key : {})"
+                    "null == $value ? {} : ($temp is Map ? $temp : {})"
                 } else {
-                    "null == $key ? {} : ($key is Map ? $key.map((key, map) => MapEntry(${returnParse(typeList[0], "key")}, ${returnParse(typeList[1], "map")})):{})"
+                    "null == $value ? {} : ($temp is Map ? $temp.map((key, map) => MapEntry(${paremParse(typeList[0], "key", true)}, ${paremParse(typeList[1], "map", true)})):{})"
                 }
             }
         }
         var typeList = type?.typeArguments?.typeList?.typeList
         var ret: String = ""
         typeList?.forEach {
-            ret += "," + "(map) =>" + returnParse(it, "map")
+            ret += "," + "(map) =>" + paremParse(it, "map", true)
         }
         return "${expression?.text}.fromMap($key $ret)"
     }
 
-    private fun getRequestMethod(): String {
+    private fun getRequestMethod(method: DartMethodDeclaration): String {
         var name = method.name!!;
         if (0 == name.indexOf("get")) {
             return "get";
@@ -189,10 +146,10 @@ class DartGenerateResponseFix(val project: Project, val editor: Editor, private 
         } else if (0 == name.indexOf("patch")) {
             return "patch";
         }
-        return "post";
+        return "";
     }
 
-    private fun getUrl(requestMethod: String): String {
+    private fun getUrl(requestMethod: String, method: DartMethodDeclaration): String {
         var url: String? = getRequestUrl(method);
         var isUrl = true;
         if (null == url) {
@@ -217,5 +174,4 @@ class DartGenerateResponseFix(val project: Project, val editor: Editor, private 
         }
         return url!!
     }
-
 }

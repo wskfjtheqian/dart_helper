@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>dart.helper.exgou.cn</id>
     <name>Dart Helper</name>
-    <version>1.2.5</version>
+    <version>1.2.6</version>
     <vendor email="wskfjtheqian@gmail.com" url="https://github.com/wskfjtheqian">wskfjtheqian</vendor>
 
     <description><![CDATA[
@@ -22,6 +22,9 @@
         <br>
         Int, double, string, bool, datetime, list, map, enum, class, generic
         <br>
+        7. Add copyWith function
+        <br>
+        8. Add auto create dio request code
         <br>
         https://gitee.com/wskfjt/dart_helper
         <br>
@@ -78,10 +81,10 @@
                     class="com.exgou.heqain.dart.helper.generate.network.DartGenerateRequestAction"
                     text="Dart Generate Request">
             </action>
-<!--            <action id="Dart.Generate.Network.Response.Action" icon="/icons/dart_iocn.png"-->
-<!--                    class="com.exgou.heqain.dart.helper.generate.network.DartGenerateResponseAction"-->
-<!--                    text="Dart Generate Response">-->
-<!--            </action>-->
+            <action id="Dart.Generate.Network.Response.Action" icon="/icons/dart_iocn.png"
+                    class="com.exgou.heqain.dart.helper.generate.network.DartGenerateResponseAction"
+                    text="Dart Generate Response">
+            </action>
         </group>
 
         <action id="Dart.Generate.AddClassByJson.Action" icon="/icons/dart_iocn.png"
