@@ -1,30 +1,39 @@
 <idea-plugin>
     <id>dart.helper.exgou.cn</id>
     <name>Dart Helper</name>
-    <version>1.2.6</version>
+    <version>1.2.8</version>
     <vendor email="wskfjtheqian@gmail.com" url="https://github.com/wskfjtheqian">wskfjtheqian</vendor>
 
     <description><![CDATA[
         Dart language development aids,
         <br>
-        1. Create dart file based on JSON data
+        Dart 语言开发助手
         <br>
-        2. Add dart class according to JSON data
+        1. Create dart file based on JSON data    <br>
+        1. 根据Json数据创建 Dart 文件(支持中文Json Key)
         <br>
-        3. Add formmap function
+        2. Add dart class according to JSON data      <br>
+        2. 根据Json数据创建 Dart 类(支持中文Json Key)
         <br>
-        4. Add tomap function
+        3. Add formMap function       <br>
+        3. 添加 formMap 函数用于解析 Json
         <br>
-        5. Output code to word document
+        4. Add toMap function         <br>
+        4. 添加 toMap 函数用于生成中文
         <br>
         <br>
         Support data types
         <br>
         Int, double, string, bool, datetime, list, map, enum, class, generic
         <br>
-        7. Add copyWith function
+        5. Add copyWith function    <br>
+        添加 copyWith 函数
         <br>
-        8. Add auto create dio request code
+        8. Add auto create dio request code    <br>
+        8. 根据函数自动添加 dio 请求代码
+        <br>
+        Automatic translation Json Key    <br>
+        自动翻译Json Key
         <br>
         https://gitee.com/wskfjt/dart_helper
         <br>
@@ -32,11 +41,9 @@
     ]]></description>
 
     <change-notes><![CDATA[
-        0. Add copyWith function
-         <br>
-        1. Add auto create dio request code
-         <br>
+        1. Delete Output code to word document
     ]]></change-notes>
+
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
     <idea-version since-build="191"/>
@@ -91,11 +98,6 @@
                 class="com.exgou.heqain.dart.helper.generate.json.AddClassByJsonAction"
                 text="Add Class By Json">
             <add-to-group anchor="after" relative-to-action="Generate.Constructor.Dart" group-id="GenerateGroup"/>
-        </action>
-
-        <action id="ExportToDoc" class="com.exgou.heqain.dart.helper.printing.ExportToDocAction" text="Export To Doc"
-                description="Export File To Doc File">
-            <add-to-group group-id="PrintExportGroup" anchor="last"/>
         </action>
     </actions>
 

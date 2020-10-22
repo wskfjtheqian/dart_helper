@@ -98,6 +98,9 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
                     "null == $value ? {} : ($temp is Map ? $temp.map((key, map) => MapEntry(${fromItem(typeList[0], "key", editor, true)}, ${fromItem(typeList[1], "map", editor, true)})):{})"
                 }
             }
+            "dynamic" -> {
+                return key
+            }
         }
         var typeList = type?.typeArguments?.typeList?.typeList
         var ret: String = ""

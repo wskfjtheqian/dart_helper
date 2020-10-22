@@ -1,5 +1,6 @@
 package com.exgou.heqain.dart.helper.news
 
+import com.exgou.heqain.dart.helper.generate.translate.Translate
 import com.intellij.json.psi.*
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
@@ -23,7 +24,7 @@ class JsonToDartFix(var mProject: Project) {
     internal val types = intArrayOf(_Int, _Double, _Bool, _DateTime, _String, _List, _Class, _Dynamic)
 
     var listCalss = HashMap<String, HashMap<String, FieldType>>()
-
+    var _temp = 0;
     fun toDart(document: Document, name: String?) {
         val file = PsiDocumentManager.getInstance(mProject).getPsiFile(document) as? JsonFile ?: return;
         val value = file.topLevelValue as? JsonObject ?: return;
@@ -39,9 +40,13 @@ class JsonToDartFix(var mProject: Project) {
         var ret: StringBuffer = StringBuffer();
         listCalss.forEach {
             ret.append("class ").append(it.key).append("{\n")
+
+            var temp: StringBuffer = StringBuffer();
             it.value.forEach { key ->
                 ret.append("//JsonName:").append(key.key).append("\n");
-                ret.append(key.value.name).append(" ").append(toFieldName(toName(key.key))).append(";\n\n");
+                var name = toFieldName(toName(key.key))
+                ret.append(key.value.name).append(" ").append(name).append(";\n\n");
+                temp.append("this.").append(name).append(",\n");
             }
 
             if (0 == it.value.size) {
@@ -49,9 +54,8 @@ class JsonToDartFix(var mProject: Project) {
             } else {
                 ret.append("${it.key}({")
             }
-            it.value.forEach { key ->
-                ret.append("this.").append(toFieldName(toName(key.key))).append(",\n");
-            }
+
+            ret.append(temp)
 
             if (0 == it.value.size) {
                 ret.append(");\n")
@@ -73,7 +77,27 @@ class JsonToDartFix(var mProject: Project) {
     }
 
     private fun toName(name: String): String {
-        return name;
+        var ret: String;
+        var reg = Regex("[^\\da-zA-Z_]+")
+        if (reg.containsMatchIn(name)) {
+            ret = Translate.`interface`.toEnglish(name);
+        } else {
+            ret = name
+        }
+
+        if (reg.containsMatchIn(ret)) {
+            ret = ret.replace(reg, "${_temp}");
+            _temp++;
+            if (ret.matches(Regex("(^[\\d]\\w+)|^[\\d]"))) {
+                ret = "t${ret}"
+            }
+        } else {
+            if (name.matches(Regex("(^[\\d]\\w+)|^[\\d]"))) {
+                ret = "t${_temp}${name}"
+            }
+        }
+
+        return ret;
     }
 
     private fun toClassName(name: String): String {

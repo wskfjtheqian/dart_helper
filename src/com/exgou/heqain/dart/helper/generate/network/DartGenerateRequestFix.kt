@@ -164,6 +164,9 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
                     "null == $key ? {} : ($key is Map ? $key.map((key, map) => MapEntry(${returnParse(typeList[0], "key")}, ${returnParse(typeList[1], "map")})):{})"
                 }
             }
+            "dynamic" -> {
+                return key
+            }
         }
         var typeList = type?.typeArguments?.typeList?.typeList
         var ret: String = ""
