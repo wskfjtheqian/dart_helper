@@ -39,7 +39,7 @@ public class JsonToDartObject extends JDialog {
     public JsonToDartObject(Project project) {
         this.mProject = project;
         setContentPane(contentPane);
-        setSize(new Dimension(800, 600));
+        setMinimumSize(new Dimension(900, 800));
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
