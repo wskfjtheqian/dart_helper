@@ -79,7 +79,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         when (expression?.text) {
             "int" -> return "null == $value ? null : ($temp is num ? $temp.toInt() : int.tryParse($temp))"
             "double" -> return "null ==$value ? null : ($temp is num ? $temp.toDouble() : double.tryParse($temp))"
-            "bool" -> return "null == $value ? null : ($temp is bool ? $temp : bool.fromEnvironment($temp))"
+            "bool" -> return "null == $value ? null : ($temp is bool ? $temp : ($temp is num ? 0 != $temp.toInt():('true'==temp.toString()))))"
             "String" -> return "$key?.toString()"
             "DateTime" -> return "null == $value ? null : ($temp is DateTime ? $temp : DateTime.tryParse($temp))"
             "List" -> {
