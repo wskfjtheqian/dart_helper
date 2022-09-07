@@ -171,48 +171,48 @@ class JsonToDartFix(var mProject: Project) {
                 }
                 when (ret?.type) {
                     _Int -> {
-                        ret?.name = "int"
+                        ret?.name = "int?"
                     }
                     _Double -> {
-                        ret?.name = "double"
+                        ret?.name = "double?"
                     }
                     _Bool -> {
-                        ret?.name = "bool"
+                        ret?.name = "bool?"
                     }
                     _String -> {
-                        ret?.name = "String"
+                        ret?.name = "String?"
                     }
                     _List -> {
-                        ret?.name = "List"
+                        ret?.name = "List?"
                     }
                     _DateTime -> {
-                        ret?.name = "DateTime"
+                        ret?.name = "DateTime?"
                     }
                     _Dynamic -> {
                         ret?.name = "dynamic"
                     }
                 }
                 ret?.type = _List
-                ret?.name = "List<${ret?.name}>"
+                ret?.name = "List<${ret?.name}>?"
                 return ret!!;
             }
             return FieldType(_List, "List");
         } else if (value is JsonStringLiteral) {
             return if (isDateTime(value.value)) {
-                FieldType(_DateTime, "DateTime")
+                FieldType(_DateTime, "DateTime?")
             } else {
-                FieldType(_String, "String")
+                FieldType(_String, "String?")
             }
 
         } else if (value is JsonBooleanLiteral) {
-            return FieldType(_Bool, "bool")
+            return FieldType(_Bool, "bool?")
 
 
         } else if (value is JsonNumberLiteral) {
             return if (-1 == value.text.indexOf('.')) {
-                FieldType(_Int, "int")
+                FieldType(_Int, "int?")
             } else {
-                FieldType(_Double, "double")
+                FieldType(_Double, "double?")
             }
 
         } else if (value is JsonNullLiteral) {

@@ -13,14 +13,22 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
 
     override fun processElements(project: Project, editor: Editor, elementsToProcess: Set<DartComponent>) {
         val templateManager = TemplateManager.getInstance(project)
-        this.anchor = this.doAddMethodsForOne(editor, templateManager, this.buildFunctionsText(templateManager, elementsToProcess), this.anchor)
+        this.anchor = this.doAddMethodsForOne(
+            editor,
+            templateManager,
+            this.buildFunctionsText(templateManager, elementsToProcess),
+            this.anchor
+        )
     }
 
     override fun getNothingFoundMessage(): String {
         return ""
     }
 
-    protected fun buildFunctionsText(templateManager: TemplateManager, elementsToProcess: Set<DartComponent>): Template {
+    protected fun buildFunctionsText(
+        templateManager: TemplateManager,
+        elementsToProcess: Set<DartComponent>
+    ): Template {
         val template = templateManager.createTemplate(this.javaClass.name, "copyWith")
         template.isToReformat = true
         template.addTextSegment(this.myDartClass.name!!)
@@ -29,7 +37,7 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
         template.addTextSegment(if (elementsToProcess.isEmpty()) "(" else "({")
 
         elementsToProcess.forEach {
-            template.addTextSegment(it.text)
+            template.addTextSegment(it.text.replace(" ", "? ").replace("??", "?"))
             template.addTextSegment(",")
         }
 

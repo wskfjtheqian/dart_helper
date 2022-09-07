@@ -51,7 +51,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
     }
 
     private fun careteFactory(myDartClass: DartClass): String {
-        var ret = "factory ${myDartClass.name}.fromMap(dynamic map"
+        var ret = "static  ${myDartClass.name}? fromMap(dynamic map"
         myDartClass.typeParameters?.typeParameterList?.forEach {
             ret += "," + it.text + " Function(dynamic map) call" + it.text
         }
