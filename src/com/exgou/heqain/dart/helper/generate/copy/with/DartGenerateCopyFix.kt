@@ -8,6 +8,8 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.lang.dart.ide.generation.BaseCreateMethodsFix
 import com.jetbrains.lang.dart.psi.DartClass
 import com.jetbrains.lang.dart.psi.DartComponent
+import com.jetbrains.lang.dart.psi.DartType
+import com.jetbrains.lang.dart.psi.DartVarAccessDeclaration
 
 open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
 
@@ -37,8 +39,15 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
         template.addTextSegment(if (elementsToProcess.isEmpty()) "(" else "({")
 
         elementsToProcess.forEach {
-            template.addTextSegment(it.text.replace(" ", "? ").replace("??", "?"))
-            template.addTextSegment(",")
+            if (it is DartVarAccessDeclaration) {
+                var type: DartType? = it.type
+                if (null == type) {
+                    template.addTextSegment("var " + it.name!!)
+                } else {
+                    template.addTextSegment(it.type!!.text.replace("?", "") + "? " + it.name!!)
+                }
+                template.addTextSegment(",")
+            }
         }
 
         template.addTextSegment(if (elementsToProcess.isEmpty()) ");" else "}){")
