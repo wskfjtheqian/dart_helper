@@ -7,6 +7,8 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.lang.dart.ide.generation.BaseCreateMethodsFix
 import com.jetbrains.lang.dart.psi.DartClass
 import com.jetbrains.lang.dart.psi.DartComponent
+import com.jetbrains.lang.dart.psi.DartType
+import com.jetbrains.lang.dart.psi.DartVarAccessDeclaration
 
 class DartGenerateNamedFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
 
@@ -26,14 +28,18 @@ class DartGenerateNamedFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         template.addTextSegment(".")
         template.addVariable(TextExpression("name"), true)
         template.addTextSegment(if (elementsToProcess.isEmpty()) "(" else "({")
-        val iterator = elementsToProcess.iterator()
 
-        while (iterator.hasNext()) {
-            template.addTextSegment("this.")
-            template.addTextSegment(iterator.next().name!!)
-            template.addTextSegment(",")
+        elementsToProcess.forEach {
+            if (it is DartVarAccessDeclaration) {
+                var type: DartType? = it.type
+                if (null != type && type.text!!.last() != '?') {
+                    template.addTextSegment("required ")
+                }
+                template.addTextSegment("this.")
+                template.addTextSegment(it.name!!)
+                template.addTextSegment(",")
+            }
         }
-
         template.addTextSegment(if (elementsToProcess.isEmpty()) ");" else "});")
         template.addEndVariable()
         template.addTextSegment(" ")
