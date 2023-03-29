@@ -10,6 +10,7 @@ import com.jetbrains.lang.dart.psi.DartClass
 import com.jetbrains.lang.dart.psi.DartComponent
 import com.jetbrains.lang.dart.psi.DartType
 import com.jetbrains.lang.dart.psi.DartVarAccessDeclaration
+import kotlin.streams.toList
 
 open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
 
@@ -31,16 +32,17 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
         templateManager: TemplateManager,
         elementsToProcess: Set<DartComponent>
     ): Template {
+        val list: List<DartComponent> = elementsToProcess.stream().dropWhile { false }.toList()
         val template = templateManager.createTemplate(this.javaClass.name, "copyWith")
         template.isToReformat = true
         template.addTextSegment(this.myDartClass.name!!)
         template.addTextSegment(" ")
         template.addVariable(TextExpression("copyWith"), true)
-        template.addTextSegment(if (elementsToProcess.isEmpty()) "(" else "({")
+        template.addTextSegment(if (list.isEmpty()) "(" else "({")
 
-        elementsToProcess.forEach {
+        list.forEach {
             if (it is DartVarAccessDeclaration) {
-                var type: DartType? = it.type
+                val type: DartType? = it.type
                 if (null == type) {
                     template.addTextSegment("var " + it.name!!)
                 } else {
@@ -50,12 +52,12 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
             }
         }
 
-        template.addTextSegment(if (elementsToProcess.isEmpty()) ");" else "}){")
+        template.addTextSegment(if (list.isEmpty()) ");" else "}){")
         template.addTextSegment("return ")
         template.addTextSegment(this.myDartClass.name!!)
         template.addTextSegment("(")
 
-        elementsToProcess.forEach {
+        list.forEach {
             template.addTextSegment(it.name!!)
             template.addTextSegment(":")
             template.addTextSegment(it.name!!)

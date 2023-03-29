@@ -117,7 +117,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
             "String" -> return key
             "DateTime" -> return "$key?.toString()"
             "List" -> {
-                var typeList = type?.typeArguments?.typeList?.typeList
+                var typeList = type.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
                     key
                 } else {
@@ -125,7 +125,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
                 }
             }
             "Map" -> {
-                var typeList = type?.typeArguments?.typeList?.typeList
+                var typeList = type.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
                     key
                 } else {
