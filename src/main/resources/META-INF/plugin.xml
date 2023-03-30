@@ -51,9 +51,6 @@
         https://github.com/wskfjtheqian/dart_helper
     ]]></description>
 
-    <change-notes><![CDATA[
-        1. Delete Output code to word document
-    ]]></change-notes>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
@@ -62,7 +59,6 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-
     </extensions>
 
 
