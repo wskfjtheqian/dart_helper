@@ -43,10 +43,14 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
                 var type: DartType? = it.type
                 if (null == type) {
                     template.addTextSegment("var " + it.name!!)
+                    template.addTextSegment(",")
                 } else {
-                    template.addTextSegment(it.type!!.text.replace("?", "") + "? " + it.name!!)
+                    if ("?" == type.text.substring(type.text.length - 1)) {
+                        template.addTextSegment(type.text + " " + it.name!!)
+                        template.addTextSegment(",")
+                    }
                 }
-                template.addTextSegment(",")
+
             }
         }
 
@@ -59,8 +63,13 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
             template.addTextSegment(it.name!!)
             template.addTextSegment(":this.")
             template.addTextSegment(it.name!!)
-            template.addTextSegment("??")
-            template.addTextSegment(it.name!!)
+            if (it is DartVarAccessDeclaration) {
+                var text = it.type?.text
+                if (null != text && "?" == text.substring(text.length - 1)) {
+                    template.addTextSegment("??")
+                    template.addTextSegment(it.name!!)
+                }
+            }
             template.addTextSegment(",")
         }
 
@@ -73,5 +82,11 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
 
     override fun buildFunctionsText(templateManager: TemplateManager, e: DartComponent): Template? {
         return null
+    }
+
+    override fun evalAnchor(editor: Editor?) {
+        val method = myDartClass.findMethodByName("copyFill");
+        method?.delete()
+        super.evalAnchor(editor)
     }
 }
