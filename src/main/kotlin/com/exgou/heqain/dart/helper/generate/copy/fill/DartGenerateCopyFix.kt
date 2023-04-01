@@ -16,10 +16,7 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
     override fun processElements(project: Project, editor: Editor, elementsToProcess: Set<DartComponent>) {
         val templateManager = TemplateManager.getInstance(project)
         this.anchor = this.doAddMethodsForOne(
-            editor,
-            templateManager,
-            this.buildFunctionsText(templateManager, elementsToProcess),
-            this.anchor
+            editor, templateManager, this.buildFunctionsText(templateManager, elementsToProcess), this.anchor
         )
     }
 
@@ -28,8 +25,7 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
     }
 
     protected fun buildFunctionsText(
-        templateManager: TemplateManager,
-        elementsToProcess: Set<DartComponent>
+        templateManager: TemplateManager, elementsToProcess: Set<DartComponent>
     ): Template {
         val template = templateManager.createTemplate(this.javaClass.name, "copyFill")
         template.isToReformat = true
@@ -61,12 +57,15 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
 
         elementsToProcess.forEach {
             template.addTextSegment(it.name!!)
-            template.addTextSegment(":this.")
-            template.addTextSegment(it.name!!)
             if (it is DartVarAccessDeclaration) {
                 var text = it.type?.text
                 if (null != text && "?" == text.substring(text.length - 1)) {
+                    template.addTextSegment(":this.")
+                    template.addTextSegment(it.name!!)
                     template.addTextSegment("??")
+                    template.addTextSegment(it.name!!)
+                } else {
+                    template.addTextSegment(":")
                     template.addTextSegment(it.name!!)
                 }
             }

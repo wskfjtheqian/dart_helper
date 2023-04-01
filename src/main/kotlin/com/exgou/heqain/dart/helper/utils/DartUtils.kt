@@ -5,13 +5,14 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
+import com.jetbrains.lang.dart.psi.DartClass
 import com.jetbrains.lang.dart.psi.DartComponent
 import com.jetbrains.lang.dart.psi.DartEnumDefinition
 import com.jetbrains.lang.dart.psi.DartType
 import java.awt.Toolkit
 import javax.swing.JDialog
 
-object UiUtils {
+object DartUtils {
     fun setJDialogToCenter(dialog: JDialog) {
         val screenSize = Toolkit.getDefaultToolkit().screenSize //获取屏幕的尺寸
         val screenWidth = screenSize.width //获取屏幕的宽
@@ -77,5 +78,17 @@ object UiUtils {
         return null;
     }
 
+    fun getFields(editor: Editor, dartClass: DartClass, fields: MutableList<DartComponent>) {
+        var superClass = dartClass.superClass
+        if (null != superClass) {
+            val project = editor.project!!
+            val offset: Int = superClass.textOffset
+            val elements = GotoDeclarationAction.findAllTargetElements(project, editor, offset);
+            for (item in elements) {
+                getFields(editor, item.parent as DartClass, fields)
+            }
+        }
+        fields.addAll(dartClass.fields)
+    }
 
 }

@@ -1,14 +1,17 @@
 package com.exgou.heqain.dart.helper.generate.bymap
 
-import com.exgou.heqain.dart.helper.utils.UiUtils
-import com.exgou.heqain.dart.helper.utils.UiUtils.getJsonName
+import com.exgou.heqain.dart.helper.utils.DartUtils
+import com.exgou.heqain.dart.helper.utils.DartUtils.getJsonName
 import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.lang.dart.ide.generation.BaseCreateMethodsFix
-import com.jetbrains.lang.dart.psi.*
+import com.jetbrains.lang.dart.psi.DartClass
+import com.jetbrains.lang.dart.psi.DartComponent
+import com.jetbrains.lang.dart.psi.DartReferenceExpression
+import com.jetbrains.lang.dart.psi.DartType
 
 class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
     override fun processElements(project: Project, editor: Editor, elementsToProcess: MutableSet<DartComponent>) {
@@ -70,7 +73,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         var temp = if (isValue) key else "temp"
 
         var expression: DartReferenceExpression? = type?.referenceExpression
-        if (UiUtils.isDartEnum(type!!, editor)) {
+        if (DartUtils.isDartEnum(type!!, editor)) {
             return "null == $value ? null : ($temp is num ? ${expression?.text}.values[$temp.toInt()] : ${expression?.text}.values[int.tryParse($temp)])"
         }
         if (isParameters(expression?.text)) {

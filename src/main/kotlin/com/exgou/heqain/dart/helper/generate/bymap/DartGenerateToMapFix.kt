@@ -1,6 +1,6 @@
 package com.exgou.heqain.dart.helper.generate.bymap
 
-import com.exgou.heqain.dart.helper.utils.UiUtils
+import com.exgou.heqain.dart.helper.utils.DartUtils
 import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.openapi.editor.Editor
@@ -46,7 +46,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         template.addTextSegment("return {")
         var genericToMap: Boolean = false;
         elementsToProcess.forEach {
-            var jsonName: String? = UiUtils.getJsonName(it);
+            var jsonName: String? = DartUtils.getJsonName(it);
             template.addTextSegment("'${jsonName ?: it?.name}':")
             template.addTextSegment("${addItem(it, editor) {
                 genericToMap = it
@@ -103,7 +103,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
 
     private fun fromItem(type: DartType?, key: String, editor: Editor, onGenericToMap: (Boolean) -> Unit): String? {
         var expression: DartReferenceExpression? = type?.referenceExpression
-        if (UiUtils.isDartEnum(type!!, editor)) {
+        if (DartUtils.isDartEnum(type!!, editor)) {
             return "$key?.index"
         }
         if (isParameters(expression?.text)) {

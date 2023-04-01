@@ -1,7 +1,7 @@
 package com.exgou.heqain.dart.helper.generate.network
 
-import com.exgou.heqain.dart.helper.utils.UiUtils
-import com.exgou.heqain.dart.helper.utils.UiUtils.getRequestUrl
+import com.exgou.heqain.dart.helper.utils.DartUtils
+import com.exgou.heqain.dart.helper.utils.DartUtils.getRequestUrl
 import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.codeInsight.template.impl.TextExpression
@@ -104,7 +104,7 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
 
     private fun parameParse(type: DartType?, key: String): Any? {
         var expression: DartReferenceExpression? = type?.referenceExpression
-        if (UiUtils.isDartEnum(type!!, editor)) {
+        if (DartUtils.isDartEnum(type!!, editor)) {
             return "$key.index"
         }
         when (expression?.text) {
@@ -139,7 +139,7 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
 
     private fun returnParse(type: DartType, key: String): String {
         var expression: DartReferenceExpression? = type.referenceExpression
-        if (UiUtils.isDartEnum(type!!, editor)) {
+        if (DartUtils.isDartEnum(type!!, editor)) {
             return "null == $key ? null : ($key is num ? ${expression?.text}.values[$key.toInt()] : ${expression?.text}.values[int.tryParse($key)])"
         }
         when (expression?.text) {

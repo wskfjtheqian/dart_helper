@@ -13,7 +13,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.lang.dart.psi.DartClass
 import com.jetbrains.lang.dart.psi.DartFile
-import org.jetbrains.annotations.NotNull
 
 class AddClassByJsonAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {

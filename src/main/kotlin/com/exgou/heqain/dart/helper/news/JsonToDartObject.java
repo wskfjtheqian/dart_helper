@@ -1,11 +1,10 @@
 package com.exgou.heqain.dart.helper.news;
 
-import com.exgou.heqain.dart.helper.utils.UiUtils;
+import com.exgou.heqain.dart.helper.utils.DartUtils;
 import com.intellij.codeInsight.actions.*;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.json.JsonFileType;
 import com.intellij.json.JsonLanguage;
-import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorSettings;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -15,8 +14,6 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.ui.EditorTextField;
-import com.jetbrains.lang.dart.DartFileType;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -75,7 +72,7 @@ public class JsonToDartObject extends JDialog {
         JsonToDartObject dialog = new JsonToDartObject(project);
         dialog.onSave = onSave;
         dialog.pack();
-        UiUtils.INSTANCE.setJDialogToCenter(dialog);
+        DartUtils.INSTANCE.setJDialogToCenter(dialog);
         dialog.setVisible(true);
     }
 

@@ -1,18 +1,19 @@
 package com.exgou.heqain.dart.helper.generate.copy.with
 
-import com.intellij.util.containers.ContainerUtil
+import com.exgou.heqain.dart.helper.generate.DartHelperGenerateHandler
+import com.exgou.heqain.dart.helper.utils.DartUtils
+import com.intellij.openapi.editor.Editor
 import com.jetbrains.lang.dart.DartComponentType
 import com.jetbrains.lang.dart.ide.generation.BaseCreateMethodsFix
-import com.jetbrains.lang.dart.ide.generation.BaseDartGenerateHandler
 import com.jetbrains.lang.dart.psi.DartClass
 import com.jetbrains.lang.dart.psi.DartComponent
+import com.jetbrains.lang.dart.util.DartResolveUtil
 
-class DartGenerateCopyHandler : BaseDartGenerateHandler() {
+class DartGenerateCopyHandler : DartHelperGenerateHandler() {
 
     override fun getTitle(): String {
         return "Generate Name"
     }
-
     override fun createFix(dartClass: DartClass): BaseCreateMethodsFix<*> {
         if (dartClass == null) {
             //            $$$reportNull$$$0(1);
@@ -26,21 +27,15 @@ class DartGenerateCopyHandler : BaseDartGenerateHandler() {
         return var10000
     }
 
-    override fun collectCandidates(dartClass: DartClass, candidates: MutableList<DartComponent>) {
-        if (dartClass == null) {
-            //            $$$reportNull$$$0(3);
+    override fun collectCandidates(editor: Editor, dartClass: DartClass, candidates: MutableList<DartComponent>) {
+        val list = ArrayList<DartComponent>()
+        DartUtils.getFields(editor, dartClass, list)
+        list.forEach {
+            if (DartComponentType.typeOf(it) == DartComponentType.FIELD &&
+                (it.isPublic || DartResolveUtil.sameLibrary(dartClass, it))
+            ) {
+                candidates.add(it)
+            }
         }
-
-        if (candidates == null) {
-            //            $$$reportNull$$$0(4);
-        }
-
-        candidates.addAll(ContainerUtil.findAll(this.computeClassMembersMap(dartClass, false).values) { component ->
-            DartComponentType.typeOf(component) === DartComponentType.FIELD && 0 != component.name!!.indexOf("_")
-        })
-    }
-
-    override fun doAllowEmptySelection(): Boolean {
-        return true
     }
 }

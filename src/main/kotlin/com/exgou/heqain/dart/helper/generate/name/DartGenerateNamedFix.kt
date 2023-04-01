@@ -1,4 +1,5 @@
 package com.exgou.heqain.dart.helper.generate.name
+
 import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.codeInsight.template.impl.TextExpression
@@ -10,18 +11,26 @@ import com.jetbrains.lang.dart.psi.DartComponent
 import com.jetbrains.lang.dart.psi.DartType
 import com.jetbrains.lang.dart.psi.DartVarAccessDeclaration
 
-class DartGenerateNamedFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
+class DartGenerateNamedFix(val dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
 
     override fun processElements(project: Project, editor: Editor, elementsToProcess: Set<DartComponent>) {
         val templateManager = TemplateManager.getInstance(project)
-        this.anchor = this.doAddMethodsForOne(editor, templateManager, this.buildFunctionsText(templateManager, elementsToProcess), this.anchor)
+        this.anchor = this.doAddMethodsForOne(
+            editor,
+            templateManager,
+            this.buildFunctionsText(templateManager, elementsToProcess),
+            this.anchor
+        )
     }
 
     override fun getNothingFoundMessage(): String {
         return ""
     }
 
-    protected fun buildFunctionsText(templateManager: TemplateManager, elementsToProcess: Set<DartComponent>): Template {
+    protected fun buildFunctionsText(
+        templateManager: TemplateManager,
+        elementsToProcess: Set<DartComponent>
+    ): Template {
         val template = templateManager.createTemplate(this.javaClass.name, "DartName")
         template.isToReformat = true
         template.addTextSegment(this.myDartClass.name!!)
@@ -35,7 +44,12 @@ class DartGenerateNamedFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
                 if (null != type && type.text!!.last() != '?') {
                     template.addTextSegment("required ")
                 }
-                template.addTextSegment("this.")
+                if (it.parent.parent.parent.parent != dartClass) {
+                    template.addTextSegment("super.")
+                } else {
+                    template.addTextSegment("this.")
+                }
+
                 template.addTextSegment(it.name!!)
                 template.addTextSegment(",")
             }
