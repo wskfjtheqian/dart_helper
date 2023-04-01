@@ -1,11 +1,13 @@
 package com.exgou.heqain.dart.helper.generate
 
+import com.exgou.heqain.dart.helper.utils.DartUtils
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.containers.ContainerUtil
+import com.jetbrains.lang.dart.DartComponentType
 import com.jetbrains.lang.dart.ide.DartNamedElementNode
 import com.jetbrains.lang.dart.ide.generation.BaseDartGenerateHandler
 import com.jetbrains.lang.dart.psi.DartClass
@@ -17,6 +19,7 @@ abstract class DartHelperGenerateHandler : BaseDartGenerateHandler() {
     override fun collectCandidates(p0: DartClass, p1: MutableList<DartComponent>) {
 
     }
+
     override fun invoke(project: Project, editor: Editor, file: PsiFile, offset: Int) {
         if (project == null) {
 //            `$$$reportNull$$$0`(5)
@@ -58,7 +61,15 @@ abstract class DartHelperGenerateHandler : BaseDartGenerateHandler() {
         }
     }
 
-    abstract fun collectCandidates(editor: Editor, dartClass: DartClass, candidates: MutableList<DartComponent>);
+    fun collectCandidates(editor: Editor, dartClass: DartClass, candidates: MutableList<DartComponent>) {
+        val list = ArrayList<DartComponent>()
+        DartUtils.getFields(editor, dartClass, list)
+        list.forEach {
+            if (DartComponentType.typeOf(it) == DartComponentType.FIELD && it.isPublic && !it.isStatic) {
+                candidates.add(it)
+            }
+        }
+    }
 
     override fun doAllowEmptySelection(): Boolean {
         return true

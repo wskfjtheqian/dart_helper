@@ -26,15 +26,4 @@ class DartGenerateMergeHandler : DartHelperGenerateHandler() {
 
         return var10000
     }
-    override fun collectCandidates(editor: Editor, dartClass: DartClass, candidates: MutableList<DartComponent>) {
-        val list = ArrayList<DartComponent>()
-        DartUtils.getFields(editor, dartClass, list)
-        list.forEach {
-            if (DartComponentType.typeOf(it) == DartComponentType.FIELD &&
-                (it.isPublic || DartResolveUtil.sameLibrary(dartClass, it))
-            ) {
-                candidates.add(it)
-            }
-        }
-    }
 }
