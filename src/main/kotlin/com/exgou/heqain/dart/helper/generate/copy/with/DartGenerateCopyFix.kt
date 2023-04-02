@@ -52,7 +52,7 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
             }
         }
 
-        template.addTextSegment(if (list.isEmpty()) ");" else "}){")
+        template.addTextSegment(if (list.isEmpty()) "){" else "}){")
         template.addTextSegment("return ")
         template.addTextSegment(this.myDartClass.name!!)
         template.addTextSegment("(")

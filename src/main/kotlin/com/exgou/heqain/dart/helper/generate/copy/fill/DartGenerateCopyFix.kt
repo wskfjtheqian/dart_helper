@@ -50,7 +50,7 @@ open class DartGenerateCopyFix(dartClass: DartClass) : BaseCreateMethodsFix<Dart
             }
         }
 
-        template.addTextSegment(if (elementsToProcess.isEmpty()) ");" else "}){")
+        template.addTextSegment(if (elementsToProcess.isEmpty()) "){" else "}){")
         template.addTextSegment("return ")
         template.addTextSegment(this.myDartClass.name!!)
         template.addTextSegment("(")
