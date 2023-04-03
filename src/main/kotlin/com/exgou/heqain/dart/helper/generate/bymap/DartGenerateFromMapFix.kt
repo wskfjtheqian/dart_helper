@@ -79,6 +79,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         if (isParameters(expression?.text)) {
             return "call${expression?.text}($key)"
         }
+
         when (expression?.text) {
             "int" -> return "null == $value ? null : ($temp is num ? $temp.toInt() : int.tryParse($temp))"
             "double" -> return "null ==$value ? null : ($temp is num ? $temp.toDouble() : double.tryParse($temp))"

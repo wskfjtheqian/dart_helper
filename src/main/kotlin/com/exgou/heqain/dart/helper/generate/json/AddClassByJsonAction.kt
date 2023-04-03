@@ -21,7 +21,7 @@ class AddClassByJsonAction : AnAction() {
         val view = event.getData(LangDataKeys.IDE_VIEW)
 
         if (null != view && project != null) {
-            JsonToDartObject.main(project) { name: String, text: String ->
+            JsonToDartObject.main(project) {  name: String, text: String ->
                 onSave(project, editor, name, text);
             }
         }
