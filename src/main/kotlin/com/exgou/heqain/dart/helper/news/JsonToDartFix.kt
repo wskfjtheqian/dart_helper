@@ -5,6 +5,8 @@ import com.intellij.json.psi.*
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
+import java.util.*
+import kotlin.collections.HashMap
 
 class FieldType(var type: Int, var name: String) {
     override fun toString(): String {
@@ -13,12 +15,12 @@ class FieldType(var type: Int, var name: String) {
 }
 
 class JsonToDartFix(var mProject: Project) {
-    internal var _Int: Int = 1
-    internal var _Double: Int = 2 or _Int
-    internal var _Bool: Int = 4
-    internal var _DateTime: Int = 8
-    internal var _String: Int = 16 or _Bool or _Double or _DateTime
-    internal var _List: Int = 32
+    private var _Int: Int = 1
+    private var _Double: Int = 2 or _Int
+    private var _Bool: Int = 4
+    private var _DateTime: Int = 8
+    private var _String: Int = 16 or _Bool or _Double or _DateTime
+    private var _List: Int = 32
     internal var _Class: Int = 64
     internal var _Dynamic: Int = 128 or _String or _DateTime or _List or _Class
     internal val types = intArrayOf(_Int, _Double, _Bool, _DateTime, _String, _List, _Class, _Dynamic)
@@ -69,16 +71,16 @@ class JsonToDartFix(var mProject: Project) {
     }
 
     private fun toFieldName(name: String): String {
-        var temp = toClassName(name)
+        val temp = toClassName(name)
         if (temp.isNotEmpty()) {
-            return temp.subSequence(0, 1).toString().toLowerCase() + temp.subSequence(1, temp.length)
+            return temp.subSequence(0, 1).toString().lowercase(Locale.getDefault()) + temp.subSequence(1, temp.length)
         }
         return ""
     }
 
     private fun toName(name: String): String {
         var ret: String;
-        var reg = Regex("[^\\da-zA-Z_]+")
+        val reg = Regex("[^\\da-zA-Z_]+")
         if (reg.containsMatchIn(name)) {
             ret = Translate.`interface`.toEnglish(name);
         } else {
@@ -112,13 +114,13 @@ class JsonToDartFix(var mProject: Project) {
 
     private fun formJsonObject(json: JsonObject, name: String?, classs: HashMap<String, FieldType>) {
         json.propertyList.forEach {
-            var temp = classs[it.name]
-            var type = fomrJsonValue(it.value, name + toClassName(toName(it.name)))
+            val temp = classs[it.name]
+            val type = fomrJsonValue(it.value, name + toClassName(toName(it.name)))
             if (null == temp) {
                 classs[it.name] = type
             } else {
-                if (!(type.type == _Class && temp?.type == _Class)) {
-                    var end = types.indexOf(temp?.type!!);
+                if (!(type.type == _Class && temp.type == _Class)) {
+                    val end = types.indexOf(temp.type);
                     for (i in end..types.size) {
                         var item = types[i];
                         if (0 != (item and type.type) && 0 != (item and temp?.type!!)) {
