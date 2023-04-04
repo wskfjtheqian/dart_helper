@@ -29,6 +29,8 @@ public class JsonToDartObject extends JDialog {
     private JButton reformatJsonButton;
     private JPanel bottom;
     private JButton buttonEscape;
+    private JCheckBox checkToMap;
+    private JCheckBox checkFormMap;
     private Project mProject;
     private OnSave onSave;
 

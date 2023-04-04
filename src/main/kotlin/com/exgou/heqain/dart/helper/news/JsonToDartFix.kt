@@ -1,6 +1,6 @@
 package com.exgou.heqain.dart.helper.news
 
-import com.exgou.heqain.dart.helper.generate.translate.Translate
+import com.exgou.heqain.dart.helper.translate.Translate
 import com.intellij.json.psi.*
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project

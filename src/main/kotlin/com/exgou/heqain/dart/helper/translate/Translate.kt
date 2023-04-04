@@ -1,6 +1,4 @@
-package com.exgou.heqain.dart.helper.generate.translate
-
-import com.exgou.heqain.dart.helper.translate.YouDao
+package com.exgou.heqain.dart.helper.translate
 
 abstract class Translate {
     abstract fun toEnglish(text: String): String
@@ -12,17 +10,15 @@ abstract class Translate {
                 temp += it.subSequence(0, 1).toString().toUpperCase() + it.subSequence(1, it.length)
             }
         };
-        return if (temp.isEmpty()) {
+        return temp.ifEmpty {
             name
-        } else {
-            temp
         }
     }
 
     companion object {
-        var _interface: Translate? = null
+        private var translate: Translate? = null
         val `interface`: Translate
-            get() = YouDao().also { _interface = it }
+            get() = YouDao().also { translate = it }
     }
 
 
