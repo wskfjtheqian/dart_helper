@@ -91,4 +91,11 @@ object DartUtils {
         fields.addAll(dartClass.fields)
     }
 
+    fun isNullPointer(type: DartType?): Boolean {
+        if (null == type) {
+            return true
+        }
+        val text = type.text
+        return "?" == text.substring(text.length - 1)
+    }
 }

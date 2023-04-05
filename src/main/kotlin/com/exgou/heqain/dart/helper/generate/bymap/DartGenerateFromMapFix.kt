@@ -16,8 +16,8 @@ import com.jetbrains.lang.dart.psi.DartType
 class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComponent>(dartClass) {
     override fun processElements(project: Project, editor: Editor, elementsToProcess: MutableSet<DartComponent>) {
         val templateManager = TemplateManager.getInstance(project)
-        var toMap = myDartClass.findNamedConstructor("fromMap");
-        var template = this.buildFunctionsText(templateManager, elementsToProcess, editor);
+        val toMap = myDartClass.findNamedConstructor("fromMap")
+        val template = this.buildFunctionsText(templateManager, elementsToProcess, editor)
         if (null != toMap) {
             toMap.delete()
             this.anchor = this.doAddMethodsForOne(editor, templateManager, template, toMap.firstChild)
@@ -34,7 +34,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         return null
     }
 
-    fun buildFunctionsText(templateManager: TemplateManager, dartComponent: MutableSet<DartComponent>, editor: Editor): Template? {
+    private fun buildFunctionsText(templateManager: TemplateManager, dartComponent: MutableSet<DartComponent>, editor: Editor): Template? {
         val template = templateManager.createTemplate(this.javaClass.name, "Dart")
         template.isToReformat = true
         template.addTextSegment(careteFactory(myDartClass))
@@ -63,16 +63,16 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
     }
 
     private fun addItem(field: DartComponent, isOne: Boolean, editor: Editor): String? {
-        var jsonName: String? = getJsonName(field);
-        var fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java)
+        val jsonName: String? = getJsonName(field)
+        val fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java)
         return fromItem(fieldType, "map['${jsonName ?: field.name}']", editor, false)
     }
 
     private fun fromItem(type: DartType?, key: String, editor: Editor, isValue: Boolean): String {
-        var value = if (isValue) key else "(temp = $key)"
-        var temp = if (isValue) key else "temp"
+        val value = if (isValue) key else "(temp = $key)"
+        val temp = if (isValue) key else "temp"
 
-        var expression: DartReferenceExpression? = type?.referenceExpression
+        val expression: DartReferenceExpression? = type?.referenceExpression
         if (DartUtils.isDartEnum(type!!, editor)) {
             return "null == $value ? null : ($temp is num ? ${expression?.text}.values[$temp.toInt()] : ${expression?.text}.values[int.tryParse($temp)])"
         }
@@ -87,7 +87,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
             "String" -> return "$key?.toString()"
             "DateTime" -> return "null == $value ? null : ($temp is DateTime ? $temp : DateTime.tryParse($temp))"
             "List" -> {
-                var typeList = type?.typeArguments?.typeList?.typeList
+                val typeList = type.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
                     "null == $value ? [] : ($temp is List ? $temp : [])"
                 } else {
@@ -95,7 +95,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
                 }
             }
             "Map" -> {
-                var typeList = type?.typeArguments?.typeList?.typeList
+                val typeList = type.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
                     "null == $value ? {} : ($temp is Map ? $temp : {})"
                 } else {
@@ -106,8 +106,8 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
                 return key
             }
         }
-        var typeList = type?.typeArguments?.typeList?.typeList
-        var ret: String = ""
+        val typeList = type.typeArguments?.typeList?.typeList
+        var ret = ""
         typeList?.forEach {
             ret += "," + "(map) =>" + fromItem(it, "map", editor, true)
         }
@@ -118,9 +118,9 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
     private fun isParameters(param: String?): Boolean {
         myDartClass.typeParameters?.typeParameterList?.forEach {
             if (it.text == param) {
-                return true;
+                return true
             }
         }
-        return false;
+        return false
     }
 }
