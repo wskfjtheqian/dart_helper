@@ -18,7 +18,7 @@ class DartGenerateRequestAction : AnAction() {
         val psiFile = event.getData(CommonDataKeys.PSI_FILE)
 
         if (psiFile != null && project != null && editor != null) {
-            val caretOffset = editor?.caretModel?.offset ?: -1
+            val caretOffset = editor.caretModel.offset
             val method = PsiTreeUtil.getParentOfType(psiFile.findElementAt(caretOffset), DartMethodDeclaration::class.java)
             if (null != method) {
                 val fix = DartGenerateRequestFix(project, editor, method);

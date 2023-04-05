@@ -34,7 +34,11 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         return null
     }
 
-    private fun buildFunctionsText(templateManager: TemplateManager, dartComponent: MutableSet<DartComponent>, editor: Editor): Template? {
+    private fun buildFunctionsText(
+        templateManager: TemplateManager,
+        dartComponent: MutableSet<DartComponent>,
+        editor: Editor
+    ): Template? {
         val template = templateManager.createTemplate(this.javaClass.name, "Dart")
         template.isToReformat = true
         template.addTextSegment(careteFactory(myDartClass))
@@ -81,17 +85,44 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         }
 
         when (expression?.text) {
-            "int" -> return "null == $value ? null : ($temp is num ? $temp.toInt() : int.tryParse($temp))"
-            "double" -> return "null ==$value ? null : ($temp is num ? $temp.toDouble() : double.tryParse($temp))"
-            "bool" -> return "null == $value ? null : ($temp is bool ? $temp : ($temp is num ? 0 != $temp.toInt():('true'==temp.toString())))"
-            "String" -> return "$key?.toString()"
-            "DateTime" -> return "null == $value ? null : ($temp is DateTime ? $temp : DateTime.tryParse($temp))"
+            "int" -> return if (DartUtils.isNullPointer(type)) {
+                "null == $value ? null : ($temp is num ? $temp.toInt() : num.tryParse($temp)?.toInt())"
+            } else {
+                "null == $value ? 0 : ($temp is num ? $temp.toInt() : (num.tryParse($temp)?.toInt() ?? 0 ))"
+            }
+            "double" -> return if (DartUtils.isNullPointer(type)) {
+                "null ==$value ? null : ($temp is num ? $temp.toDouble() : num.tryParse($temp)?.toDouble())"
+            } else {
+                "null ==$value ? 0.0 : ($temp is num ? $temp.toDouble() : (num.tryParse($temp)?.toDouble() ?? 0.0))"
+            }
+            "bool" -> return if (DartUtils.isNullPointer(type)) {
+                "null == $value ? null : ($temp is bool ? $temp : ($temp is num ? 0 != $temp.toInt():('true' == temp.toString())))"
+            } else {
+                "null == $value ? false : ($temp is bool ? $temp : ($temp is num ? 0 != $temp.toInt():('true' == temp.toString())))"
+            }
+            "String" -> return if (DartUtils.isNullPointer(type)) {
+                "$key?.toString()"
+            } else {
+                "$key?.toString() ?? \"\""
+            }
+            "DateTime" -> return if (DartUtils.isNullPointer(type)) {
+                "null == $value ? null : ($temp is DateTime ? $temp : DateTime.tryParse($temp))"
+            } else {
+                "null == $value ? DateTime.now() : ($temp is DateTime ? $temp : DateTime.tryParse($temp) ?? DateTime.now())"
+            }
             "List" -> {
                 val typeList = type.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
                     "null == $value ? [] : ($temp is List ? $temp : [])"
                 } else {
-                    "null == $value ? [] : ($temp is List ? $temp.map((map)=>${fromItem(typeList[0], "map", editor, true)}).toList() : [])"
+                    "null == $value ? [] : ($temp is List ? $temp.map((map)=>${
+                        fromItem(
+                            typeList[0],
+                            "map",
+                            editor,
+                            true
+                        )
+                    }).toList() : [])"
                 }
             }
             "Map" -> {
@@ -99,7 +130,14 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
                 return if (null == typeList || typeList.isEmpty()) {
                     "null == $value ? {} : ($temp is Map ? $temp : {})"
                 } else {
-                    "null == $value ? {} : ($temp is Map ? $temp.map((key, map) => MapEntry(${fromItem(typeList[0], "key", editor, true)}, ${fromItem(typeList[1], "map", editor, true)})):{})"
+                    "null == $value ? {} : ($temp is Map ? $temp.map((key, map) => MapEntry(${
+                        fromItem(
+                            typeList[0],
+                            "key",
+                            editor,
+                            true
+                        )
+                    }, ${fromItem(typeList[1], "map", editor, true)})):{})"
                 }
             }
             "dynamic" -> {
@@ -111,7 +149,13 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
         typeList?.forEach {
             ret += "," + "(map) =>" + fromItem(it, "map", editor, true)
         }
-        return "${expression?.text}.fromMap($key $ret)"
+
+
+        return if(DartUtils.isNullPointer(type)){
+            "${expression?.text}.fromMap($key $ret)"
+        }else{
+            "${expression?.text}.fromMap($key $ret) ?? ${expression?.text}()"
+        }
     }
 
 

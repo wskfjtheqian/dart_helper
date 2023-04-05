@@ -98,4 +98,5 @@ object DartUtils {
         val text = type.text
         return "?" == text.substring(text.length - 1)
     }
+
 }

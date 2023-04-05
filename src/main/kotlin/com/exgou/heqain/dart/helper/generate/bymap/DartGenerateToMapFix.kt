@@ -42,9 +42,9 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         template.isToReformat = true
         template.addTextSegment("Map<String, dynamic> toMap() {")
         template.addTextSegment("return {")
-        var genericToMap: Boolean = false;
-        elementsToProcess.forEach {
-            var jsonName: String? = DartUtils.getJsonName(it);
+        var genericToMap = false
+        elementsToProcess.forEach { it ->
+            val jsonName: String? = DartUtils.getJsonName(it)
             template.addTextSegment("'${jsonName ?: it?.name}':")
             template.addTextSegment(
                 "${
@@ -92,40 +92,51 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
     }
 
     private fun addItem(field: DartComponent, editor: Editor, onGenericToMap: (Boolean) -> Unit): String? {
-        val fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java);
-        return fromItem(fieldType, field.name!!, editor, onGenericToMap);
+        val fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java)
+        return fromItem(fieldType, field.name!!, editor, onGenericToMap)
     }
 
     private fun isParameters(param: String?): Boolean {
         myDartClass.typeParameters?.typeParameterList?.forEach {
             if (it.text == param) {
-                return true;
+                return true
             }
         }
-        return false;
+        return false
     }
 
-    private fun fromItem(type: DartType?, key: String, editor: Editor, onGenericToMap: (Boolean) -> Unit): String? {
+    private fun fromItem(type: DartType?, key: String, editor: Editor, onGenericToMap: (Boolean) -> Unit): String {
         val expression: DartReferenceExpression? = type?.referenceExpression
         if (DartUtils.isDartEnum(type!!, editor)) {
             return "$key?.index"
         }
         if (isParameters(expression?.text)) {
             onGenericToMap(true)
-            return "_genericToMap($key )";
+            return "_genericToMap($key )"
         }
         when (expression?.text) {
             "int" -> return key
             "double" -> return key
             "bool" -> return key
             "String" -> return key
-            "DateTime" -> return "$key?.toString()"
+            "DateTime" -> {
+                return if (DartUtils.isNullPointer(type)) {
+                    "$key?.toString()"
+                } else {
+                    "$key.toString()"
+                }
+            }
             "List" -> {
-                var typeList = type.typeArguments?.typeList?.typeList
+                val typeList = type.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
                     key
                 } else {
-                    "$key?.map((map)=>${fromItem(typeList[0], "map", editor, onGenericToMap)})?.toList()??[]"
+                    return if (DartUtils.isNullPointer(type)) {
+                        "$key?.map((map)=>${fromItem(typeList[0], "map", editor, onGenericToMap)}).toList()??[]"
+                    } else {
+                        "$key.map((map)=>${fromItem(typeList[0], "map", editor, onGenericToMap)}).toList()"
+                    }
+
                 }
             }
             "Map" -> {
@@ -133,21 +144,33 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
                 return if (null == typeList || typeList.isEmpty()) {
                     key
                 } else {
-                    "$key?.map((key, map) => MapEntry(${
-                        fromItem(
-                            typeList[0],
-                            "key",
-                            editor,
-                            onGenericToMap
-                        )
-                    }, ${fromItem(typeList[1], "map", editor, onGenericToMap)}))??{}"
+                    return if (DartUtils.isNullPointer(type)) {
+                        "$key?.map((key, map) => MapEntry(${
+                            fromItem(
+                                typeList[0],
+                                "key",
+                                editor,
+                                onGenericToMap
+                            )
+                        }, ${fromItem(typeList[1], "map", editor, onGenericToMap)}))??{}"
+                    } else {
+                        "$key.map((key, map) => MapEntry(${
+                            fromItem(
+                                typeList[0],
+                                "key",
+                                editor,
+                                onGenericToMap
+                            )
+                        }, ${fromItem(typeList[1], "map", editor, onGenericToMap)}))"
+                    }
                 }
             }
         }
+
         return if (DartUtils.isNullPointer(type)) {
-            "$key.toMap()"
-        } else {
             "$key?.toMap()"
+        } else {
+            "$key.toMap()"
         }
     }
 

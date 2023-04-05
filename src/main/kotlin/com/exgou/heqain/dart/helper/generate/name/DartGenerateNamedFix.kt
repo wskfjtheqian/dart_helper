@@ -1,5 +1,6 @@
 package com.exgou.heqain.dart.helper.generate.name
 
+import com.exgou.heqain.dart.helper.utils.DartUtils
 import com.intellij.codeInsight.template.Template
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.codeInsight.template.impl.TextExpression
@@ -33,6 +34,7 @@ class DartGenerateNamedFix(val dartClass: DartClass) : BaseCreateMethodsFix<Dart
     ): Template {
         val template = templateManager.createTemplate(this.javaClass.name, "DartName")
         template.isToReformat = true
+        template.addTextSegment("const ")
         template.addTextSegment(this.myDartClass.name!!)
         template.addTextSegment(".")
         template.addVariable(TextExpression("name"), true)
@@ -40,17 +42,26 @@ class DartGenerateNamedFix(val dartClass: DartClass) : BaseCreateMethodsFix<Dart
 
         elementsToProcess.forEach {
             if (it is DartVarAccessDeclaration) {
-                var type: DartType? = it.type
-                if (null != type && type.text!!.last() != '?') {
-                    template.addTextSegment("required ")
-                }
+                val type: DartType? = it.type
                 if (it.parent.parent.parent.parent != dartClass) {
                     template.addTextSegment("super.")
                 } else {
                     template.addTextSegment("this.")
                 }
-
                 template.addTextSegment(it.name!!)
+                if (!DartUtils.isNullPointer(type)) {
+                    template.addTextSegment(" = ")
+                    when (val name = type!!.referenceExpression!!.text) {
+                        "int" -> template.addTextSegment("0")
+                        "double" -> template.addTextSegment("0.0")
+                        "String" -> template.addTextSegment("\"\"")
+                        "bool" -> template.addTextSegment("false")
+                        "DateTime" -> template.addTextSegment("DateTime.now()")
+                        "List" -> template.addTextSegment("const[]")
+                        "Map" -> template.addTextSegment("const{}")
+                        else -> template.addTextSegment("const ${name}()")
+                    }
+                }
                 template.addTextSegment(",")
             }
         }

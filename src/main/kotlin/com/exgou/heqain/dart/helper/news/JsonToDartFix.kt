@@ -106,7 +106,7 @@ class JsonToDartFix(var mProject: Project) {
         var temp: String = "";
         name.split("_").forEach {
             if (it.isNotEmpty()) {
-                temp += it.subSequence(0, 1).toString().toUpperCase() + it.subSequence(1, it.length)
+                temp += it.subSequence(0, 1).toString().uppercase(Locale.getDefault()) + it.subSequence(1, it.length)
             }
         };
         return temp
