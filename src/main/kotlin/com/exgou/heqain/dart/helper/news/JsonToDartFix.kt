@@ -6,7 +6,6 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import java.util.*
-import kotlin.collections.HashMap
 
 class FieldType(var type: Int, var name: String) {
     override fun toString(): String {
@@ -26,29 +25,29 @@ class JsonToDartFix(var mProject: Project) {
     internal val types = intArrayOf(_Int, _Double, _Bool, _DateTime, _String, _List, _Class, _Dynamic)
 
     var listCalss = HashMap<String, HashMap<String, FieldType>>()
-    var _temp = 0;
+    var _temp = 0
     fun toDart(document: Document, name: String?) {
-        val file = PsiDocumentManager.getInstance(mProject).getPsiFile(document) as? JsonFile ?: return;
-        val value = file.topLevelValue as? JsonObject ?: return;
+        val file = PsiDocumentManager.getInstance(mProject).getPsiFile(document) as? JsonFile ?: return
+        val value = file.topLevelValue as? JsonObject ?: return
         name ?: return
 
-        var temp = toClassName(toName(name))
-        val classs = HashMap<String, FieldType>()
-        formJsonObject(value, temp, classs);
-        listCalss[temp] = classs
+        val temp = toClassName(toName(name))
+        val clazz = HashMap<String, FieldType>()
+        formJsonObject(value, temp, clazz)
+        listCalss[temp] = clazz
     }
 
     override fun toString(): String {
-        var ret: StringBuffer = StringBuffer();
+        val ret = StringBuffer()
         listCalss.forEach {
             ret.append("class ").append(it.key).append("{\n")
 
-            var temp: StringBuffer = StringBuffer();
+            val temp = StringBuffer()
             it.value.forEach { key ->
-                ret.append("//JsonName:").append(key.key).append("\n");
-                var name = toFieldName(toName(key.key))
-                ret.append(key.value.name).append(" ").append(name).append(";\n\n");
-                temp.append("this.").append(name).append(",\n");
+                ret.append("//JsonName:").append(key.key).append("\n")
+                val name = toFieldName(toName(key.key))
+                ret.append(key.value.name).append(" ").append(name).append(";\n\n")
+                temp.append("this.").append(name).append(",\n")
             }
 
             if (0 == it.value.size) {
@@ -67,7 +66,7 @@ class JsonToDartFix(var mProject: Project) {
             ret.append("}\n\n")
         }
 
-        return ret.toString();
+        return ret.toString()
     }
 
     private fun toFieldName(name: String): String {
@@ -79,17 +78,17 @@ class JsonToDartFix(var mProject: Project) {
     }
 
     private fun toName(name: String): String {
-        var ret: String;
+        var ret: String
         val reg = Regex("[^\\da-zA-Z_]+")
         if (reg.containsMatchIn(name)) {
-            ret = Translate.`interface`.toEnglish(name);
+            ret = Translate.`interface`.toEnglish(name)
         } else {
             ret = name
         }
 
         if (reg.containsMatchIn(ret)) {
-            ret = ret.replace(reg, "${_temp}");
-            _temp++;
+            ret = ret.replace(reg, "${_temp}")
+            _temp++
             if (ret.matches(Regex("(^[\\d]\\w+)|^[\\d]"))) {
                 ret = "t${ret}"
             }
@@ -99,16 +98,16 @@ class JsonToDartFix(var mProject: Project) {
             }
         }
 
-        return ret;
+        return ret
     }
 
     private fun toClassName(name: String): String {
-        var temp: String = "";
+        var temp = ""
         name.split("_").forEach {
             if (it.isNotEmpty()) {
                 temp += it.subSequence(0, 1).toString().uppercase(Locale.getDefault()) + it.subSequence(1, it.length)
             }
-        };
+        }
         return temp
     }
 
@@ -120,16 +119,16 @@ class JsonToDartFix(var mProject: Project) {
                 classs[it.name] = type
             } else {
                 if (!(type.type == _Class && temp.type == _Class)) {
-                    val end = types.indexOf(temp.type);
+                    val end = types.indexOf(temp.type)
                     for (i in end..types.size) {
-                        var item = types[i];
+                        val item = types[i]
                         if (0 != (item and type.type) && 0 != (item and temp.type)) {
                             classs[it.name] = if (item > type.type) {
                                 FieldType(item, type.name)
                             } else {
                                 type
                             }
-                            break;
+                            break
                         }
                     }
                 }
@@ -140,30 +139,30 @@ class JsonToDartFix(var mProject: Project) {
     private fun fomrJsonValue(value: JsonValue?, name: String?): FieldType {
         if (value is JsonObject) {
             if (null != name) {
-                val temp = listCalss[name] ?: HashMap<String, FieldType>()
-                formJsonObject(value, name, temp);
-                listCalss[name] = temp;
-                return FieldType(_Class, name);
+                val temp = listCalss[name] ?: HashMap()
+                formJsonObject(value, name, temp)
+                listCalss[name] = temp
+                return FieldType(_Class, name)
             }
         } else if (value is JsonArray) {
             if (null != name) {
-                var ret: FieldType? = null;
+                var ret: FieldType? = null
                 value.valueList.forEach {
-                    var type = fomrJsonValue(it, name);
+                    val type = fomrJsonValue(it, name)
                     if (null == ret) {
-                        ret = type;
+                        ret = type
                     }
                     if (!(type.type == _Class && ret?.type == _Class)) {
-                        var end = types.indexOf(ret?.type!!);
+                        val end = types.indexOf(ret?.type!!)
                         for (i in end..types.size) {
-                            var item = types[i];
+                            val item = types[i]
                             if (0 != (item and type.type) && 0 != (item and ret?.type!!)) {
                                 ret = if (item > type.type) {
                                     FieldType(item, type.name)
                                 } else {
                                     type
                                 }
-                                break;
+                                break
                             }
                         }
                     }
@@ -196,9 +195,9 @@ class JsonToDartFix(var mProject: Project) {
                 }
                 ret?.type = _List
                 ret?.name = "List<${ret?.name}>?"
-                return ret!!;
+                return ret!!
             }
-            return FieldType(_List, "List");
+            return FieldType(_List, "List")
         } else if (value is JsonStringLiteral) {
             return if (isDateTime(value.value)) {
                 FieldType(_DateTime, "DateTime?")
@@ -231,7 +230,10 @@ class JsonToDartFix(var mProject: Project) {
         if (Regex("^(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d\$").matches(value)) {
             return true
         }
-        if (Regex("^[1-9]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])\\s+(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d\$").matches(value)) {
+        if (Regex("^[1-9]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])\\s+(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d\$").matches(
+                value
+            )
+        ) {
             return true
         }
 
