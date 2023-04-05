@@ -21,18 +21,6 @@ abstract class DartHelperGenerateHandler : BaseDartGenerateHandler() {
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile, offset: Int) {
-        if (project == null) {
-//            `$$$reportNull$$$0`(5)
-        }
-
-        if (editor == null) {
-//            `$$$reportNull$$$0`(6)
-        }
-
-        if (file == null) {
-//            `$$$reportNull$$$0`(7)
-        }
-
         val dartClass = PsiTreeUtil.getParentOfType(
             file.findElementAt(offset),
             DartClassDefinition::class.java

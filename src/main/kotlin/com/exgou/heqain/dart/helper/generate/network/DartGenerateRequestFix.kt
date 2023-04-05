@@ -11,12 +11,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.lang.dart.psi.*
+import java.util.*
 
 class DartGenerateRequestFix(val project: Project, val editor: Editor, private val method: DartMethodDeclaration) {
 
     fun process() {
         val templateManager = TemplateManager.getInstance(project);
-        var template: Template = this.buildFunctionsText(templateManager, editor) ?: return;
+        val template: Template = this.buildFunctionsText(templateManager, editor) ?: return
 
         WriteCommandAction.runWriteCommandAction(project) {
             val anchor: PsiElement? = method.functionBody!!.firstChild.firstChild.nextSibling;
@@ -26,13 +27,13 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
                     method.functionBody!!.lastChild.lastChild.prevSibling
             )
             templateManager.startTemplate(editor, template)
-            val dartComponent: PsiElement? = PsiTreeUtil.getParentOfType(anchor!!.findElementAt(editor.caretModel.offset), DartComponent::class.java)
+           // val dartComponent: PsiElement? = PsiTreeUtil.getParentOfType(anchor.findElementAt(editor.caretModel.offset), DartComponent::class.java)
         }
     }
 
     fun getParameter(method: DartMethodDeclaration): Array<DartNormalFormalParameter> {
-        val ret: MutableList<DartNormalFormalParameter> = java.util.ArrayList()
-        var parameterList: DartFormalParameterList = method.formalParameterList
+        val ret: MutableList<DartNormalFormalParameter> = ArrayList()
+        val parameterList: DartFormalParameterList = method.formalParameterList
         parameterList.children.forEach { it ->
             if (it is DartNormalFormalParameter) {
                 ret.add(it)
@@ -48,16 +49,16 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
     }
 
 
-    fun buildFunctionsText(templateManager: TemplateManager, editor: Editor): Template? {
+    private fun buildFunctionsText(templateManager: TemplateManager, editor: Editor): Template? {
         val template = templateManager.createTemplate(this.javaClass.name, "Network Request")
         template.addTextSegment("\nvar request = ")
         template.addTextSegment("dio.")
-        var requestMethod = getRequestMethod();
-        template.addTextSegment(if (requestMethod.isEmpty()) "post" else requestMethod)
+        val requestMethod = getRequestMethod()
+        template.addTextSegment(requestMethod.ifEmpty { "post" })
         template.addTextSegment("<Map>(")
 
         template.addVariable(TextExpression("\"${getUrl(requestMethod)}\""), true)
-        var parameters = getParameter(method)
+        val parameters = getParameter(method)
         if (parameters.isNotEmpty()) {
             template.addTextSegment(",")
             var temp = "data"
@@ -77,14 +78,14 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
         }
         template.addTextSegment(");\n")
 
-        var returnType: DartReturnType? = method.returnType
+        val returnType: DartReturnType? = method.returnType
         if (null == returnType) {
             template.addTextSegment("return onMap(request, (map) => map)")
         } else {
-            var type = returnType.type!!
-            var expression: DartReferenceExpression? = type.referenceExpression
+            val type = returnType.type!!
+            val expression: DartReferenceExpression? = type.referenceExpression
             if ("Future" == expression?.text) {
-                var typeList = type?.typeArguments?.typeList?.typeList;
+                val typeList = type.typeArguments?.typeList?.typeList
                 if (null == typeList || typeList.isEmpty()) {
                     template.addTextSegment("return onMap(request, (map) => map)")
                 } else {
@@ -98,12 +99,12 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
         return template
     }
 
-    private fun createParame(parameter: DartSimpleFormalParameter): Any? {
-        return parameParse(parameter.type, parameter.name!!);
+    private fun createParame(parameter: DartSimpleFormalParameter): Any {
+        return parameParse(parameter.type, parameter.name!!)
     }
 
-    private fun parameParse(type: DartType?, key: String): Any? {
-        var expression: DartReferenceExpression? = type?.referenceExpression
+    private fun parameParse(type: DartType?, key: String): Any {
+        val expression: DartReferenceExpression? = type?.referenceExpression
         if (DartUtils.isDartEnum(type!!, editor)) {
             return "$key.index"
         }
@@ -114,7 +115,7 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
             "String" -> return key
             "DateTime" -> return "$key?.toString()"
             "List" -> {
-                var typeList = type?.typeArguments?.typeList?.typeList
+                val typeList = type.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
                     key
                 } else {
@@ -122,7 +123,7 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
                 }
             }
             "Map" -> {
-                var typeList = type?.typeArguments?.typeList?.typeList
+                val typeList = type.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
                     key
                 } else {
@@ -134,12 +135,12 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
     }
 
     private fun createReturn(type: DartType): String {
-        return "return onMap<${type?.text}>(request, (map) => ${returnParse(type, "map")})"
+        return "return onMap<${type.text}>(request, (map) => ${returnParse(type, "map")})"
     }
 
     private fun returnParse(type: DartType, key: String): String {
-        var expression: DartReferenceExpression? = type.referenceExpression
-        if (DartUtils.isDartEnum(type!!, editor)) {
+        val expression: DartReferenceExpression? = type.referenceExpression
+        if (DartUtils.isDartEnum(type, editor)) {
             return "null == $key ? null : ($key is num ? ${expression?.text}.values[$key.toInt()] : ${expression?.text}.values[int.tryParse($key)])"
         }
         when (expression?.text) {
@@ -149,7 +150,7 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
             "String" -> return "$key?.toString()"
             "DateTime" -> return "null == $key ? null : DateTime.parse($key.toString())"
             "List" -> {
-                var typeList = type?.typeArguments?.typeList?.typeList
+                val typeList = type.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
                     "null == $key ? [] : ($key is List ? $key : [])"
                 } else {
@@ -157,7 +158,7 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
                 }
             }
             "Map" -> {
-                var typeList = type?.typeArguments?.typeList?.typeList
+                val typeList = type.typeArguments?.typeList?.typeList
                 return if (null == typeList || typeList.isEmpty()) {
                     "null == $key ? {} : ($key is Map ? $key : {})"
                 } else {
@@ -168,8 +169,8 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
                 return key
             }
         }
-        var typeList = type?.typeArguments?.typeList?.typeList
-        var ret: String = ""
+        val typeList = type.typeArguments?.typeList?.typeList
+        var ret = ""
         typeList?.forEach {
             ret += "," + "(map) =>" + returnParse(it, "map")
         }
@@ -177,41 +178,39 @@ class DartGenerateRequestFix(val project: Project, val editor: Editor, private v
     }
 
     private fun getRequestMethod(): String {
-        var name = method.name!!;
+        val name = method.name!!
         if (0 == name.indexOf("get")) {
-            return "get";
+            return "get"
         } else if (0 == name.indexOf("head")) {
-            return "head";
+            return "head"
         } else if (0 == name.indexOf("post")) {
-            return "post";
+            return "post"
         } else if (0 == name.indexOf("put")) {
-            return "put";
+            return "put"
         } else if (0 == name.indexOf("delete")) {
-            return "delete";
+            return "delete"
         } else if (0 == name.indexOf("patch")) {
-            return "patch";
+            return "patch"
         }
-        return "";
+        return ""
     }
 
     private fun getUrl(requestMethod: String): String {
-        var url: String? = getRequestUrl(method);
-        var isUrl = true;
+        var url: String? = getRequestUrl(method)
+        var isUrl = true
         if (null == url) {
-            isUrl = false;
-            url = "/" + method.name.toString().substring(requestMethod.length).toLowerCase()
+            isUrl = false
+            url = "/" + method.name.toString().substring(requestMethod.length).lowercase(Locale.getDefault())
         }
-        var temp: PsiElement = method;
+        var temp: PsiElement? = method
         while (null != temp && temp !is DartClass) {
-            temp = temp.parent;
+            temp = temp.parent
         }
         if (null != temp && temp is DartClass) {
-            var classUrl = getRequestUrl(temp);
+            val classUrl = getRequestUrl(temp)
             if (null == classUrl) {
-                if (!isUrl) {
-                    temp.implementsList?.forEach {
-                        url = "/" + it.referenceExpression?.text.toString().toLowerCase() + url
-                    }
+                if (!isUrl) temp.implementsList.forEach {
+                    url = "/" + it.referenceExpression?.text.toString().lowercase(Locale.getDefault()) + url
                 }
             } else {
                 url = classUrl + url

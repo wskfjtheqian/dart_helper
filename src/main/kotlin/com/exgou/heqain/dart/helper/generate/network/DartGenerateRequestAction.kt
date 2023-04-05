@@ -32,8 +32,8 @@ class DartGenerateRequestAction : AnAction() {
         val editorAndPsiFile = getEditorAndPsiFile(e)
         val editor = editorAndPsiFile.first as Editor
         val psiFile = editorAndPsiFile.second as PsiFile
-        val caretOffset = editor?.caretModel?.offset ?: -1
-        val enable = psiFile != null && this.doEnable(PsiTreeUtil.getParentOfType(psiFile.findElementAt(caretOffset), DartComponent::class.java))
+        val caretOffset = editor.caretModel.offset
+        val enable = this.doEnable(PsiTreeUtil.getParentOfType(psiFile.findElementAt(caretOffset), DartComponent::class.java))
         e.presentation.isEnabledAndVisible = enable
     }
 

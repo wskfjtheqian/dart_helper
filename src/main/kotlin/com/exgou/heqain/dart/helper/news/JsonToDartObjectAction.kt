@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFileFactory
 import com.jetbrains.lang.dart.DartFileType
+import java.util.*
 import java.util.regex.Pattern
 
 
@@ -44,8 +45,8 @@ class JsonToDartObjectAction : AnAction() {
             if (word.length - 1 == word.indexOf("_")) {
                 word = word.substring(0, word.length - 1)
             }
-            ret += "_" + word.toLowerCase()
+            ret += "_" + word.lowercase(Locale.getDefault())
         }
-        return if (ret.isEmpty()) name.toLowerCase() else ret.substring(1)
+        return if (ret.isEmpty()) name.lowercase(Locale.getDefault()) else ret.substring(1)
     }
 }

@@ -123,7 +123,7 @@ class JsonToDartFix(var mProject: Project) {
                     val end = types.indexOf(temp.type);
                     for (i in end..types.size) {
                         var item = types[i];
-                        if (0 != (item and type.type) && 0 != (item and temp?.type!!)) {
+                        if (0 != (item and type.type) && 0 != (item and temp.type)) {
                             classs[it.name] = if (item > type.type) {
                                 FieldType(item, type.name)
                             } else {

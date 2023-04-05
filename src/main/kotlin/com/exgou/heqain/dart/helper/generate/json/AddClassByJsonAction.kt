@@ -21,7 +21,7 @@ class AddClassByJsonAction : AnAction() {
         val view = event.getData(LangDataKeys.IDE_VIEW)
 
         if (null != view && project != null) {
-            JsonToDartObject.main(project) {  name: String, text: String ->
+            JsonToDartObject.main(project) { name: String, text: String ->
                 onSave(project, editor, name, text);
             }
         }
@@ -41,8 +41,8 @@ class AddClassByJsonAction : AnAction() {
         val editorAndPsiFile = getEditorAndPsiFile(e)
         val editor = editorAndPsiFile.first as Editor
         val psiFile = editorAndPsiFile.second as PsiFile
-        val caretOffset = editor?.caretModel?.offset ?: -1
-        val enable = psiFile != null && psiFile is DartFile && this.doEnable(PsiTreeUtil.getParentOfType(psiFile.findElementAt(caretOffset), DartClass::class.java))
+        val caretOffset = editor.caretModel.offset
+        val enable = psiFile is DartFile && this.doEnable(PsiTreeUtil.getParentOfType(psiFile.findElementAt(caretOffset), DartClass::class.java))
         e.presentation.isEnabledAndVisible = enable
     }
 

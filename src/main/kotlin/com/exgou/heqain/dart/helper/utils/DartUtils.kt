@@ -21,10 +21,10 @@ object DartUtils {
     }
 
     fun isDartEnum(fieldType: DartType, editor: Editor?): Boolean {
-        var project = editor?.project!!
+        val project = editor?.project!!
         val offset: Int = fieldType.textOffset
-        val elements = GotoDeclarationAction.findAllTargetElements(project, editor, offset);
-        val element = if (elements.isEmpty()) null else elements[0];
+        val elements = GotoDeclarationAction.findAllTargetElements(project, editor, offset)
+        val element = if (elements.isEmpty()) null else elements[0]
         if (null == element || null == element.parent) {
             return false;
         }
@@ -79,11 +79,11 @@ object DartUtils {
     }
 
     fun getFields(editor: Editor, dartClass: DartClass, fields: MutableList<DartComponent>) {
-        var superClass = dartClass.superClass
+        val superClass = dartClass.superClass
         if (null != superClass) {
             val project = editor.project!!
             val offset: Int = superClass.textOffset
-            val elements = GotoDeclarationAction.findAllTargetElements(project, editor, offset);
+            val elements = GotoDeclarationAction.findAllTargetElements(project, editor, offset)
             for (item in elements) {
                 getFields(editor, item.parent as DartClass, fields)
             }

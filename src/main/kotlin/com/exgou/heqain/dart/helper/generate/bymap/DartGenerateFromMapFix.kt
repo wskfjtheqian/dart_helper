@@ -65,7 +65,7 @@ class DartGenerateFromMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartCo
     private fun addItem(field: DartComponent, isOne: Boolean, editor: Editor): String? {
         var jsonName: String? = getJsonName(field);
         var fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java)
-        return fromItem(fieldType, "map['${jsonName ?: field?.name}']", editor, false)
+        return fromItem(fieldType, "map['${jsonName ?: field.name}']", editor, false)
     }
 
     private fun fromItem(type: DartType?, key: String, editor: Editor, isValue: Boolean): String {
