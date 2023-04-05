@@ -1,10 +1,12 @@
 package com.exgou.heqain.dart.helper.news
 
 import com.exgou.heqain.dart.helper.translate.Translate
+import com.exgou.heqain.dart.helper.utils.DartUtils
 import com.intellij.json.psi.*
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiFile
 import java.util.*
 
 class FieldType(var type: Int, var name: String) {
@@ -13,7 +15,7 @@ class FieldType(var type: Int, var name: String) {
     }
 }
 
-class JsonToDartFix(var mProject: Project) {
+class JsonToDartFix(var mProject: Project) : JsonToDartObject.ToFormMap {
     private var _Int: Int = 1
     private var _Double: Int = 2 or _Int
     private var _Bool: Int = 4
@@ -67,6 +69,13 @@ class JsonToDartFix(var mProject: Project) {
         }
 
         return ret.toString()
+    }
+
+    override fun invoke(file: PsiFile) {
+        listCalss.forEach {
+           var clazz = DartUtils.findClassByName(file,it.key)
+
+        }
     }
 
     private fun toFieldName(name: String): String {

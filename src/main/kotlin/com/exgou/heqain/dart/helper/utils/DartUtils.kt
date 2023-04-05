@@ -4,7 +4,9 @@ import com.intellij.codeInsight.navigation.actions.GotoDeclarationAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.util.PsiTreeUtil
 import com.jetbrains.lang.dart.psi.DartClass
 import com.jetbrains.lang.dart.psi.DartComponent
 import com.jetbrains.lang.dart.psi.DartEnumDefinition
@@ -99,4 +101,13 @@ object DartUtils {
         return "?" == text.substring(text.length - 1)
     }
 
+    fun findClassByName(file: PsiFile, name: String): DartClass? {
+        val list = PsiTreeUtil.findChildrenOfAnyType(file, DartClass::class.java)
+        for (item in list) {
+            if (item.name == name) {
+                return item
+            }
+        }
+        return null
+    }
 }

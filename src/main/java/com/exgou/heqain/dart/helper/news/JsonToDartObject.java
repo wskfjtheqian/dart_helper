@@ -14,6 +14,7 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.ui.EditorTextField;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -133,11 +134,15 @@ public class JsonToDartObject extends JDialog {
 
         JsonToDartFix fix = new JsonToDartFix(mProject);
         fix.toDart(editJson.getEditor().getDocument(), objectName.getText());
-        onSave.onSave(objectName.getText(), fix.toString());
+        onSave.onSave(objectName.getText(), fix.toString(), fix);
         onCancel();
     }
 
     public interface OnSave {
-        void onSave(String name, String text);
+        void onSave(String name, String text, ToFormMap toFormMap);
+    }
+
+    public interface ToFormMap {
+        void invoke(@NotNull PsiFile file);
     }
 }

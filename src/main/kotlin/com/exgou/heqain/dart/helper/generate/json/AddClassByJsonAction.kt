@@ -18,22 +18,31 @@ class AddClassByJsonAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.getData(CommonDataKeys.PROJECT)
         val editor = event.getData(CommonDataKeys.EDITOR)
+        val file = event.getData(CommonDataKeys.PSI_FILE)
         val view = event.getData(LangDataKeys.IDE_VIEW)
 
         if (null != view && project != null) {
-            JsonToDartObject.main(project) { name: String, text: String ->
-                onSave(project, editor, name, text);
+            JsonToDartObject.main(project) { name: String, text: String, toFormMap: JsonToDartObject.ToFormMap ->
+                onSave(project, editor, file!!, name, text, toFormMap)
             }
         }
     }
 
-    private fun onSave(project: Project, editor: Editor?, name: String, text: String) {
+    private fun onSave(
+        project: Project,
+        editor: Editor?,
+        file: PsiFile,
+        name: String,
+        text: String,
+        toFormMap: JsonToDartObject.ToFormMap
+    ) {
         val templateManager = TemplateManager.getInstance(project)
         val template = templateManager.createTemplate(name, "Dart")
 
         template.isToReformat = true
         template.addTextSegment(text)
         templateManager.startTemplate(editor!!, template);
+        toFormMap.invoke(file)
     }
 
 
@@ -42,7 +51,12 @@ class AddClassByJsonAction : AnAction() {
         val editor = editorAndPsiFile.first as Editor
         val psiFile = editorAndPsiFile.second as PsiFile
         val caretOffset = editor.caretModel.offset
-        val enable = psiFile is DartFile && this.doEnable(PsiTreeUtil.getParentOfType(psiFile.findElementAt(caretOffset), DartClass::class.java))
+        val enable = psiFile is DartFile && this.doEnable(
+            PsiTreeUtil.getParentOfType(
+                psiFile.findElementAt(caretOffset),
+                DartClass::class.java
+            )
+        )
         e.presentation.isEnabledAndVisible = enable
     }
 
