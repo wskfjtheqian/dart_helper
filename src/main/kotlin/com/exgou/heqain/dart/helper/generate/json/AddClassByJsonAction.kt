@@ -22,8 +22,8 @@ class AddClassByJsonAction : AnAction() {
         val view = event.getData(LangDataKeys.IDE_VIEW)
 
         if (null != view && project != null) {
-            JsonToDartObject.main(project) { name: String, text: String, toFormMap: JsonToDartObject.ToFormMap ->
-                onSave(project, editor, file!!, name, text, toFormMap)
+            JsonToDartObject.main(project) { name: String, text: String ->
+                onSave(project, editor, file!!, name, text)
             }
         }
     }
@@ -33,8 +33,7 @@ class AddClassByJsonAction : AnAction() {
         editor: Editor?,
         file: PsiFile,
         name: String,
-        text: String,
-        toFormMap: JsonToDartObject.ToFormMap
+        text: String
     ) {
         val templateManager = TemplateManager.getInstance(project)
         val template = templateManager.createTemplate(name, "Dart")
@@ -42,7 +41,6 @@ class AddClassByJsonAction : AnAction() {
         template.isToReformat = true
         template.addTextSegment(text)
         templateManager.startTemplate(editor!!, template);
-        toFormMap.invoke(file)
     }
 
 

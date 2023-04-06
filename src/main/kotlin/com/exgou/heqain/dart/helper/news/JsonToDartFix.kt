@@ -1,15 +1,10 @@
 package com.exgou.heqain.dart.helper.news
 
-import com.exgou.heqain.dart.helper.generate.bymap.DartGenerateToMapFix
 import com.exgou.heqain.dart.helper.translate.Translate
-import com.exgou.heqain.dart.helper.utils.DartUtils
-import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.json.psi.*
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiFile
-import com.jetbrains.lang.dart.psi.DartClass
 import java.util.*
 
 class FieldType(var type: Int, var name: String) {
@@ -18,16 +13,16 @@ class FieldType(var type: Int, var name: String) {
     }
 }
 
-class JsonToDartFix(var mProject: Project, val toMap: Boolean, val formMap: Boolean) : JsonToDartObject.ToFormMap {
+class JsonToDartFix(var mProject: Project, val toMap: Boolean, val formMap: Boolean) {
     private var _Int: Int = 1
     private var _Double: Int = 2 or _Int
     private var _Bool: Int = 4
     private var _DateTime: Int = 8
     private var _String: Int = 16 or _Bool or _Double or _DateTime
     private var _List: Int = 32
-    internal var _Class: Int = 64
-    internal var _Dynamic: Int = 128 or _String or _DateTime or _List or _Class
-    internal val types = intArrayOf(_Int, _Double, _Bool, _DateTime, _String, _List, _Class, _Dynamic)
+    private var _Class: Int = 64
+    private var _Dynamic: Int = 128 or _String or _DateTime or _List or _Class
+    private val types = intArrayOf(_Int, _Double, _Bool, _DateTime, _String, _List, _Class, _Dynamic)
 
     var listCalss = HashMap<String, HashMap<String, FieldType>>()
     var _temp = 0
@@ -47,46 +42,45 @@ class JsonToDartFix(var mProject: Project, val toMap: Boolean, val formMap: Bool
         listCalss.forEach {
             ret.append("class ").append(it.key).append("{\n")
 
-            val temp = StringBuffer()
             it.value.forEach { key ->
                 ret.append("//JsonName:").append(key.key).append("\n")
                 val name = toFieldName(toName(key.key))
                 ret.append(key.value.name).append(" ").append(name).append(";\n\n")
-                temp.append("this.").append(name).append(",\n")
             }
 
-            if (0 == it.value.size) {
-                ret.append("${it.key}(")
-            } else {
-                ret.append("${it.key}({")
+            ret.append("${it.key}(").append(if (0 == it.value.size) "" else "{")
+            it.value.forEach { key ->
+                val name = toFieldName(toName(key.key))
+                ret.append("this.").append(name).append(",\n")
+            }
+            ret.append(if (0 == it.value.size) "" else "}").append(");\n")
+
+            if (toMap) {
+                ret.append("Map<String, dynamic> toMap() {\n")
+                ret.append("return {\n")
+                it.value.forEach { key ->
+                    val name = toFieldName(toName(key.key))
+                    ret.append("\"").append(name).append("\":")
+                    ret.append(toMap(name, key))
+                    ret.append(",\n")
+                }
+                ret.append("};\n")
+                ret.append("}\n")
             }
 
-            ret.append(temp)
 
-            if (0 == it.value.size) {
-                ret.append(");\n")
-            } else {
-                ret.append("});\n")
-            }
             ret.append("}\n\n")
         }
 
         return ret.toString()
     }
 
-    override fun invoke(file: PsiFile) {
-        this.listCalss.forEach {
-            val clazz = DartUtils.findClassByName(file, it.key)
-            if (null != clazz) {
-                toMap(file, clazz)
-            }
+    private fun toMap(name: String, key: Map.Entry<String, FieldType>): String {
+        return when (key.value.name) {
+            "DateTime?" -> "${name}.toString()"
+            "List?" -> "${name}?.map((e)->e).toList()"
+            else -> name
         }
-    }
-
-    fun toMap(file: PsiFile, clazz: DartClass) {
-        val fix = DartGenerateToMapFix(clazz)
-        val templateManager = TemplateManager.getInstance(mProject)
-//        fix.buildFunctionsText(templateManager,)
     }
 
     private fun toFieldName(name: String): String {

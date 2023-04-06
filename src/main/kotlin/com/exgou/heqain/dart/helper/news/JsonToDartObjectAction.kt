@@ -21,8 +21,8 @@ class JsonToDartObjectAction : AnAction() {
         val view = e.getData(LangDataKeys.IDE_VIEW)
         if (null != view && project != null) {
             val directory = DirectoryChooserUtil.getOrChooseDirectory(view)
-            JsonToDartObject.main(project) { name: String, text: String, toFormMap: JsonToDartObject.ToFormMap ->
-                onSave(project, directory, name, text, toFormMap)
+            JsonToDartObject.main(project) { name: String, text: String ->
+                onSave(project, directory, name, text)
             }
         }
     }
@@ -31,14 +31,12 @@ class JsonToDartObjectAction : AnAction() {
         project: Project,
         directory: PsiDirectory?,
         name: String,
-        text: String,
-        toFormMap: JsonToDartObject.ToFormMap
+        text: String
     ) {
         WriteCommandAction.runWriteCommandAction(project) {
             val file = PsiFileFactory.getInstance(project)
                 .createFileFromText("${getName(name)}.dart", DartFileType.INSTANCE, text)
             directory?.add(file)
-            toFormMap.invoke(file);
         }
     }
 
