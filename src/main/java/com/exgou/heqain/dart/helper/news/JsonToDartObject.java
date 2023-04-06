@@ -132,7 +132,7 @@ public class JsonToDartObject extends JDialog {
             return;
         }
 
-        JsonToDartFix fix = new JsonToDartFix(mProject);
+        JsonToDartFix fix = new JsonToDartFix(mProject, checkToMap.isSelected(), checkFormMap.isSelected());
         fix.toDart(editJson.getEditor().getDocument(), objectName.getText());
         onSave.onSave(objectName.getText(), fix.toString(), fix);
         onCancel();

@@ -1,12 +1,15 @@
 package com.exgou.heqain.dart.helper.news
 
+import com.exgou.heqain.dart.helper.generate.bymap.DartGenerateToMapFix
 import com.exgou.heqain.dart.helper.translate.Translate
 import com.exgou.heqain.dart.helper.utils.DartUtils
+import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.json.psi.*
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
+import com.jetbrains.lang.dart.psi.DartClass
 import java.util.*
 
 class FieldType(var type: Int, var name: String) {
@@ -15,7 +18,7 @@ class FieldType(var type: Int, var name: String) {
     }
 }
 
-class JsonToDartFix(var mProject: Project) : JsonToDartObject.ToFormMap {
+class JsonToDartFix(var mProject: Project, val toMap: Boolean, val formMap: Boolean) : JsonToDartObject.ToFormMap {
     private var _Int: Int = 1
     private var _Double: Int = 2 or _Int
     private var _Bool: Int = 4
@@ -72,10 +75,18 @@ class JsonToDartFix(var mProject: Project) : JsonToDartObject.ToFormMap {
     }
 
     override fun invoke(file: PsiFile) {
-        listCalss.forEach {
-           var clazz = DartUtils.findClassByName(file,it.key)
-
+        this.listCalss.forEach {
+            val clazz = DartUtils.findClassByName(file, it.key)
+            if (null != clazz) {
+                toMap(file, clazz)
+            }
         }
+    }
+
+    fun toMap(file: PsiFile, clazz: DartClass) {
+        val fix = DartGenerateToMapFix(clazz)
+        val templateManager = TemplateManager.getInstance(mProject)
+//        fix.buildFunctionsText(templateManager,)
     }
 
     private fun toFieldName(name: String): String {

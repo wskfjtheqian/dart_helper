@@ -33,7 +33,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         return null
     }
 
-    private fun buildFunctionsText(
+    fun buildFunctionsText(
         templateManager: TemplateManager,
         dartComponent: MutableSet<DartComponent>,
         editor: Editor
@@ -47,11 +47,9 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
             val jsonName: String? = DartUtils.getJsonName(it)
             template.addTextSegment("'${jsonName ?: it?.name}':")
             template.addTextSegment(
-                "${
-                    addItem(it, editor) {
-                        genericToMap = it
-                    }
-                }"
+                addItem(it, editor) {
+                    genericToMap = it
+                }
             )
             template.addTextSegment(",")
         }
@@ -91,7 +89,7 @@ class DartGenerateToMapFix(dartClass: DartClass) : BaseCreateMethodsFix<DartComp
         return template
     }
 
-    private fun addItem(field: DartComponent, editor: Editor, onGenericToMap: (Boolean) -> Unit): String? {
+    private fun addItem(field: DartComponent, editor: Editor, onGenericToMap: (Boolean) -> Unit): String {
         val fieldType = PsiTreeUtil.getChildOfType(field, DartType::class.java)
         return fromItem(fieldType, field.name!!, editor, onGenericToMap)
     }
