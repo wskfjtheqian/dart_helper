@@ -61,7 +61,7 @@ class JsonToDartFix(var mProject: Project, val toMap: Boolean, val formMap: Bool
                 it.value.forEach { key ->
                     val name = toFieldName(toName(key.key))
                     ret.append("\"").append(name).append("\":")
-                    ret.append(toMap(name, key))
+                    ret.append(toMap(name, key.value.name))
                     ret.append(",\n")
                 }
                 ret.append("};\n")
@@ -75,11 +75,22 @@ class JsonToDartFix(var mProject: Project, val toMap: Boolean, val formMap: Bool
         return ret.toString()
     }
 
-    private fun toMap(name: String, key: Map.Entry<String, FieldType>): String {
-        return when (key.value.name) {
-            "DateTime?" -> "${name}.toString()"
-            "List?" -> "${name}?.map((e)->e).toList()"
-            else -> name
+    private fun toMap(name: String, key: String): String {
+        return if (0 == key.indexOf("DateTime")) {
+            "${name}.toString()"
+        } else if (0 == key.indexOf("bool")) {
+            name
+        } else if (0 == key.indexOf("double")) {
+            name
+        } else if (0 == key.indexOf("int")) {
+            name
+        } else if (0 == key.indexOf("String")) {
+            name
+        } else if (0 == key.indexOf("List<")) {
+            val key = key.substring(5, key.length - 2)
+            "${name}?.map((e)=>${toMap(if ('?' == key.last()) "e?" else "e", key)}).toList()"
+        } else {
+            "$name.toMap()"
         }
     }
 
@@ -156,7 +167,7 @@ class JsonToDartFix(var mProject: Project, val toMap: Boolean, val formMap: Bool
                 val temp = listCalss[name] ?: HashMap()
                 formJsonObject(value, name, temp)
                 listCalss[name] = temp
-                return FieldType(_Class, name)
+                return FieldType(_Class, "$name?")
             }
         } else if (value is JsonArray) {
             if (null != name) {
@@ -172,7 +183,7 @@ class JsonToDartFix(var mProject: Project, val toMap: Boolean, val formMap: Bool
                             val item = types[i]
                             if (0 != (item and type.type) && 0 != (item and ret?.type!!)) {
                                 ret = if (item > type.type) {
-                                    FieldType(item, type.name)
+                                    FieldType(item, type.name + "?")
                                 } else {
                                     type
                                 }
